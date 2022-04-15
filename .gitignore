@@ -1,0 +1,6 @@
+node_modules
+.env
+.sqlbackup
+yarn-error.log
+
+uploads
