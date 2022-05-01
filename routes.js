@@ -1,5 +1,6 @@
 const { Router } = require("express");
-const { upload } = require("./controller");
+const { upload } = require("./src/youtube/youtubeController");
+const { getAuth } = require("./src/google/googleController");
 const multer = require("multer");
 const path = require("path");
 const routes = Router();
@@ -13,9 +14,12 @@ const storage = multer.diskStorage({
     cb(null, Date.now() + path.extname(file.originalname));
   },
 });
-
 const multerUpload = multer({ storage: storage });
 
+// youtube routes
 routes.post("/v1/youtube/upload", multerUpload.single("file"), upload);
+
+// google routes
+routes.get("/v1/google/get-auth", getAuth);
 
 module.exports = routes;
