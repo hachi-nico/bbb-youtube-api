@@ -1,7 +1,7 @@
 .env
 .sqlbackup
 yarn-error.log
-.client-secret-dev.json
+client-secret-dev.json
 
 node_modules
 uploads
