@@ -1,6 +1,6 @@
 const { Router } = require("express");
-const { upload } = require("./src/youtube/youtubeController");
-const { getAuth } = require("./src/google/googleController");
+const { upload } = require("./src/controller/localUploadController");
+const { getAuth } = require("./src/controller/youtubeUploadController");
 const multer = require("multer");
 const path = require("path");
 const routes = Router();

@@ -23,7 +23,7 @@ const getAuth = (req, res) => {
           return;
         }
         // Authorize a client with the loaded credentials, then call the YouTube API.
-        authorize(JSON.parse(content), getChannel);
+        authorize(JSON.parse(content), getChannel, res);
       }
     );
   } catch (e) {
@@ -33,7 +33,7 @@ const getAuth = (req, res) => {
   }
 };
 
-const authorize = (credentials, callback) => {
+const authorize = (credentials, callback, res) => {
   const clientSecret = credentials.web.client_secret;
   const clientId = credentials.web.client_id;
   const redirectUrl = credentials.web.redirect_uris[0];
@@ -42,15 +42,15 @@ const authorize = (credentials, callback) => {
   // Check if we have previously stored a token.
   fs.readFile(TOKEN_PATH, function (err, token) {
     if (err) {
-      getNewToken(oauth2Client, callback);
+      getNewToken(oauth2Client, callback, res);
     } else {
       oauth2Client.credentials = JSON.parse(token);
-      callback(oauth2Client);
+      callback(oauth2Client, res);
     }
   });
 };
 
-function getNewToken(oauth2Client, callback) {
+function getNewToken(oauth2Client, callback, res) {
   const authUrl = oauth2Client.generateAuthUrl({
     access_type: "offline",
     scope: SCOPES,
@@ -69,7 +69,7 @@ function getNewToken(oauth2Client, callback) {
       }
       oauth2Client.credentials = token;
       storeToken(token);
-      callback(oauth2Client);
+      callback(oauth2Client, res);
     });
   });
 }
@@ -88,7 +88,7 @@ function storeToken(token) {
   });
 }
 
-function getChannel(auth) {
+function getChannel(auth, res) {
   const service = google.youtube("v3");
   service.channels.list(
     {
@@ -112,6 +112,9 @@ function getChannel(auth) {
           channels[0].snippet.title,
           channels[0].statistics.viewCount
         );
+        return res.status(200).json({
+          message: "berhasil get channel " + channels[0].snippet.title,
+        });
       }
     }
   );
