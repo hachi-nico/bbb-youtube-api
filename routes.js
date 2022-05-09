@@ -1,6 +1,10 @@
 const { Router } = require("express");
 const { upload } = require("./src/controller/localUploadController");
-const { getAuth } = require("./src/controller/youtubeUploadController");
+const {
+  getAuth,
+  getAuthUrl,
+  getNewToken,
+} = require("./src/controller/youtubeUploadController");
 const multer = require("multer");
 const path = require("path");
 const routes = Router();
@@ -21,6 +25,8 @@ routes.post("/v1/youtube/upload", multerUpload.single("file"), upload);
 
 // google routes
 routes.get("/v1/google/get-auth", getAuth);
+routes.post("/v1/google/get-auth-url", getAuthUrl);
+routes.post("/v1/google/get-new-token", getNewToken);
 routes.get("/v1/google/redirect-uri", (req, res) => {
   return res.status(200).json({
     message: "This is redirect uris",

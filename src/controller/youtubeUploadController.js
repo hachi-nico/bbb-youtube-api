@@ -1,29 +1,26 @@
 const fs = require("fs");
-const readline = require("readline");
 const { google } = require("googleapis");
 const OAuth2 = google.auth.OAuth2;
 
-// If modifying these scopes, delete your previously saved credentials
-// at ~/.credentials/youtube-nodejs-quickstart.json
+// jika mengubah scopes hapus dulu json yang tersimpan
 const SCOPES = ["https://www.googleapis.com/auth/youtube.readonly"];
 const TOKEN_DIR =
   (process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE) +
   "/.credentials/";
-const TOKEN_PATH = TOKEN_DIR + "youtube-nodejs-quickstart.json";
+const TOKEN_PATH = TOKEN_DIR + "mytoken.json";
 
-// controller
 const getAuth = (req, res) => {
   try {
-    // Load client secrets from a local file.
+    // Load dari file lokal
     fs.readFile(
       "client-secret-dev.json",
       function processClientSecrets(err, content) {
         if (err) {
-          console.log("Error loading client secret file: " + err);
-          return;
+          return res.status(500).json({
+            message: "Gagal saat load client secret file: " + err,
+          });
         }
-        // Authorize a client with the loaded credentials, then call the YouTube API.
-        authorize(JSON.parse(content), getChannel, res);
+        authorize(JSON.parse(content), returnAtuh, res);
       }
     );
   } catch (e) {
@@ -33,46 +30,63 @@ const getAuth = (req, res) => {
   }
 };
 
+// proses auth
 const authorize = (credentials, callback, res) => {
-  const clientSecret = credentials.web.client_secret;
-  const clientId = credentials.web.client_id;
+  const { client_secret, client_id } = credentials.web;
   const redirectUrl = credentials.web.redirect_uris[0];
-  const oauth2Client = new OAuth2(clientId, clientSecret, redirectUrl);
 
-  // Check if we have previously stored a token.
+  // Cek apakah sudah ada token yang tersimpan di disk sebelumnya
   fs.readFile(TOKEN_PATH, function (err, token) {
     if (err) {
-      getNewToken(oauth2Client, callback, res);
+      // jika belum return credentialnya saja
+      // getNewToken(oauth2Client, callback, res);
+      return res.status(200).json({
+        status: 0,
+        message: "Token yang tersimpan tidak ditemukan",
+        oauth2ClientSecret: client_secret,
+        oauth2ClientId: client_id,
+        oauth2ClientRedirectUrl: redirectUrl,
+      });
     } else {
+      const oauth2Client = new OAuth2(client_id, clientSecret, redirectUrl);
       oauth2Client.credentials = JSON.parse(token);
       callback(oauth2Client, res);
     }
   });
 };
 
-function getNewToken(oauth2Client, callback, res) {
+const getAuthUrl = (req, res) => {
+  const { oauth2ClientSecret, oauth2ClientId, oauth2ClientRedirectUrl } =
+    req.body;
+
+  const oauth2Client = new OAuth2(
+    oauth2ClientId,
+    oauth2ClientSecret,
+    oauth2ClientRedirectUrl
+  );
+
   const authUrl = oauth2Client.generateAuthUrl({
     access_type: "offline",
     scope: SCOPES,
   });
-  console.log("Authorize this app by visiting this url: ", authUrl);
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
+
+  return res.redirect(authUrl);
+};
+
+const getNewToken = (req, res) => {
+  const { oauth2ClientUrlCode } = req.query.code;
+
+  oauth2ClientUrlCode.getToken(code, function (err, token) {
+    if (err) {
+      return res.status(500).json({
+        message: "Gagal saat mendapatkan token dari authurl" + err,
+      });
+    }
+    oauth2ClientUrlCode.credentials = token;
+    storeToken(token);
+    returnAtuh(oauth2Client, res);
   });
-  rl.question("Enter the code from that page here: ", function (code) {
-    rl.close();
-    oauth2Client.getToken(code, function (err, token) {
-      if (err) {
-        console.log("Error while trying to retrieve access token", err);
-        return;
-      }
-      oauth2Client.credentials = token;
-      storeToken(token);
-      callback(oauth2Client, res);
-    });
-  });
-}
+};
 
 function storeToken(token) {
   try {
@@ -84,40 +98,14 @@ function storeToken(token) {
   }
   fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
     if (err) throw err;
-    console.log("Token stored to " + TOKEN_PATH);
+    console.log("Token tersimpan ke " + TOKEN_PATH);
   });
 }
 
-function getChannel(auth, res) {
-  const service = google.youtube("v3");
-  service.channels.list(
-    {
-      mine: true,
-      auth: auth,
-      part: "snippet,contentDetails,statistics",
-    },
-    function (err, response) {
-      if (err) {
-        console.log("The API returned an error: " + err);
-        return;
-      }
-      const channels = response.data.items;
-      if (channels.length == 0) {
-        console.log("No channel found.");
-      } else {
-        console.log(
-          "This channel's ID is %s. Its title is '%s', and " +
-            "it has %s views.",
-          channels[0].id,
-          channels[0].snippet.title,
-          channels[0].statistics.viewCount
-        );
-        return res.status(200).json({
-          message: "berhasil get channel " + channels[0].snippet.title,
-        });
-      }
-    }
-  );
+function returnAtuh(auth, res) {
+  return res.status(200).json({
+    authObject: auth,
+  });
 }
 
-module.exports = { getAuth };
+module.exports = { getAuth, getAuthUrl, getNewToken };
