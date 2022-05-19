@@ -20,7 +20,7 @@ const getAuth = (req, res) => {
             message: "Gagal saat load client secret file: " + err,
           });
         }
-        authorize(JSON.parse(content), returnAtuh, res);
+        authorize(JSON.parse(content), getChannel, res);
       }
     );
   } catch (e) {
@@ -39,7 +39,6 @@ const authorize = (credentials, callback, res) => {
   fs.readFile(TOKEN_PATH, function (err, token) {
     if (err) {
       // jika belum return credentialnya saja
-      // getNewToken(oauth2Client, callback, res);
       return res.status(200).json({
         status: 0,
         message: "Token yang tersimpan tidak ditemukan",
@@ -48,7 +47,7 @@ const authorize = (credentials, callback, res) => {
         oauth2ClientRedirectUrl: redirectUrl,
       });
     } else {
-      const oauth2Client = new OAuth2(client_id, clientSecret, redirectUrl);
+      const oauth2Client = new OAuth2(client_id, client_secret, redirectUrl);
       oauth2Client.credentials = JSON.parse(token);
       callback(oauth2Client, res);
     }
@@ -70,25 +69,34 @@ const getAuthUrl = (req, res) => {
     scope: SCOPES,
   });
 
-  return res.redirect(authUrl);
+  return res.json({ authUrl });
+  // return res.redirect(authUrl);
 };
 
 const getNewToken = (req, res) => {
-  const { oauth2ClientUrlCode } = req.query.code;
+  const { code } = req.query;
+  const { oauth2ClientSecret, oauth2ClientId, oauth2ClientRedirectUrl } =
+    req.body;
 
-  oauth2ClientUrlCode.getToken(code, function (err, token) {
+  const oauth2Client = new OAuth2(
+    oauth2ClientId,
+    oauth2ClientSecret,
+    oauth2ClientRedirectUrl
+  );
+
+  oauth2Client.getToken(code, function (err, token) {
     if (err) {
       return res.status(500).json({
         message: "Gagal saat mendapatkan token dari authurl" + err,
       });
     }
-    oauth2ClientUrlCode.credentials = token;
+    oauth2Client.credentials = token;
     storeToken(token);
-    returnAtuh(oauth2Client, res);
+    getChannel(oauth2Client, res);
   });
 };
 
-function storeToken(token) {
+const storeToken = (token) => {
   try {
     fs.mkdirSync(TOKEN_DIR);
   } catch (err) {
@@ -100,12 +108,45 @@ function storeToken(token) {
     if (err) throw err;
     console.log("Token tersimpan ke " + TOKEN_PATH);
   });
-}
+};
 
-function returnAtuh(auth, res) {
+const getChannel = (auth, res) => {
+  const service = google.youtube("v3");
+  service.channels.list(
+    {
+      mine: true,
+      auth: auth,
+      part: "snippet,contentDetails,statistics",
+    },
+    function (err, response) {
+      if (err) {
+        console.log("The API returned an error: " + err);
+        return;
+      }
+      const channels = response.data.items;
+      if (channels.length == 0) {
+        console.log("No channel found.");
+      } else {
+        console.log(
+          "This channel's ID is %s. Its title is '%s', and " +
+            "it has %s views.",
+          channels[0].id,
+          channels[0].snippet.title,
+          channels[0].statistics.viewCount
+        );
+        return res.status(200).json({
+          auth,
+          message: "berhasil get channel " + channels[0].snippet.title,
+        });
+      }
+    }
+  );
+};
+
+const returnAtuh = (auth, res) => {
   return res.status(200).json({
     authObject: auth,
   });
-}
+};
 
 module.exports = { getAuth, getAuthUrl, getNewToken };
