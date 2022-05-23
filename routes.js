@@ -20,10 +20,10 @@ const storage = multer.diskStorage({
 });
 const multerUpload = multer({ storage: storage });
 
-// youtube routes
+// local upload
 routes.post("/v1/youtube/upload", multerUpload.single("file"), upload);
 
-// google routes
+// google auth dan callback youtube
 routes.get("/v1/google/get-auth", getAuth);
 routes.post("/v1/google/get-auth-url", getAuthUrl);
 routes.post("/v1/google/get-new-token", getNewToken);

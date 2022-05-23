@@ -3,13 +3,16 @@ const { google } = require("googleapis");
 const OAuth2 = google.auth.OAuth2;
 
 // jika mengubah scopes hapus dulu json yang tersimpan
-const SCOPES = ["https://www.googleapis.com/auth/youtube.readonly"];
+const SCOPES = [
+  "https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/youtube.upload",
+];
 const TOKEN_DIR =
   (process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE) +
   "/.credentials/";
 const TOKEN_PATH = TOKEN_DIR + "mytoken.json";
 
 const getAuth = (req, res) => {
+  const { callbackTypes } = req.query;
   try {
     // Load dari file lokal
     fs.readFile(
@@ -20,7 +23,11 @@ const getAuth = (req, res) => {
             message: "Gagal saat load client secret file: " + err,
           });
         }
-        authorize(JSON.parse(content), getChannel, res);
+        if (callbackTypes == "getChannel") {
+          authorize(JSON.parse(content), getChannel, res);
+        } else if (callbackTypes == "youtubeUpload") {
+          authorize(JSON.parse(content), youtubeUpload, res);
+        }
       }
     );
   } catch (e) {
@@ -74,8 +81,7 @@ const getAuthUrl = (req, res) => {
 };
 
 const getNewToken = (req, res) => {
-  const { code } = req.query;
-  const { oauth2ClientSecret, oauth2ClientId, oauth2ClientRedirectUrl } =
+  const { oauth2ClientSecret, oauth2ClientId, oauth2ClientRedirectUrl, code } =
     req.body;
 
   const oauth2Client = new OAuth2(
@@ -147,6 +153,44 @@ const returnAtuh = (auth, res) => {
   return res.status(200).json({
     authObject: auth,
   });
+};
+
+const youtubeUpload = (auth, res, fileAttributes) => {
+  try {
+    // const { path } = fileAttributes;
+    const youtube = google.youtube({ version: "v3", auth });
+    console.log(youtube);
+    youtube.videos.insert(
+      {
+        resource: {
+          // Video title and description
+          snippet: {
+            title: "test 3",
+            description: "des",
+          },
+          // I don't want to spam my subscribers
+          // status: {
+          //   privacyStatus: "private",
+          // },
+        },
+        // This is for the callback function
+        part: "snippet",
+
+        // Create the readable stream to upload the video
+        media: {
+          body: fs.createReadStream("uploads/p.mp4"),
+        },
+      },
+      (err, data) => {
+        if (err) throw err;
+        console.log(data);
+        console.log("Done.");
+        // fs.unlinkSync("uploads/p.mp4");
+      }
+    );
+  } catch (e) {
+    console.log("errr " + e);
+  }
 };
 
 module.exports = { getAuth, getAuthUrl, getNewToken };
