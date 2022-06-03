@@ -1,17 +1,9 @@
 const fs = require("fs");
 const { google } = require("googleapis");
 const OAuth2 = google.auth.OAuth2;
+const { SCOPES, TOKEN_PATH, storeToken } = require("./globalFunction");
 
-// jika mengubah scopes hapus dulu json yang tersimpan
-const SCOPES = [
-  "https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/youtube.upload",
-];
-const TOKEN_DIR =
-  (process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE) +
-  "/.credentials/";
-const TOKEN_PATH = TOKEN_DIR + "mytoken.json";
-
-const getAuth = (req, res) => {
+const getAuthWithCallback = (req, res) => {
   const { callbackTypes } = req.query;
   try {
     // Load dari file lokal
@@ -20,7 +12,8 @@ const getAuth = (req, res) => {
       function processClientSecrets(err, content) {
         if (err) {
           return res.status(500).json({
-            message: "Gagal saat load client secret file: " + err,
+            err,
+            message: "Gagal saat load client secret file",
           });
         }
         if (callbackTypes == "getChannel") {
@@ -32,7 +25,8 @@ const getAuth = (req, res) => {
     );
   } catch (e) {
     return res.status(500).json({
-      message: "Gagal get auth " + e,
+      err,
+      message: "Gagal get auth ",
     });
   }
 };
@@ -77,7 +71,6 @@ const getAuthUrl = (req, res) => {
   });
 
   return res.json({ authUrl });
-  // return res.redirect(authUrl);
 };
 
 const getNewToken = (req, res) => {
@@ -93,26 +86,13 @@ const getNewToken = (req, res) => {
   oauth2Client.getToken(code, function (err, token) {
     if (err) {
       return res.status(500).json({
-        message: "Gagal saat mendapatkan token dari authurl" + err,
+        err,
+        message: "Gagal saat mendapatkan token dari authurl",
       });
     }
     oauth2Client.setCredentials(token);
     storeToken(token);
-    getChannel(oauth2Client, res);
-  });
-};
-
-const storeToken = (token) => {
-  try {
-    fs.mkdirSync(TOKEN_DIR);
-  } catch (err) {
-    if (err.code != "EEXIST") {
-      throw err;
-    }
-  }
-  fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
-    if (err) throw err;
-    console.log("Token tersimpan ke " + TOKEN_PATH);
+    return res.status(200).json({ message: "berhasil mendapatkan token baru" });
   });
 };
 
@@ -126,36 +106,21 @@ const getChannel = (auth, res) => {
     },
     function (err, response) {
       if (err) {
-        console.log("The API returned an error: " + err);
-        return;
-      }
-      const channels = response.data.items;
-      if (channels.length == 0) {
-        console.log("No channel found.");
-      } else {
-        console.log(
-          "This channel's ID is %s. Its title is '%s', and " +
-            "it has %s views.",
-          channels[0].id,
-          channels[0].snippet.title,
-          channels[0].statistics.viewCount
-        );
-        return res.status(200).json({
-          auth,
-          message: "berhasil get channel " + channels[0].snippet.title,
+        return res.status(500).json({
+          err,
+          message: "gagal get channel",
         });
       }
+      const channels = response.data.items;
+      return res.status(200).json({
+        auth,
+        message: "berhasil get channel " + channels[0].snippet.title,
+      });
     }
   );
 };
 
-const returnAtuh = (auth, res) => {
-  return res.status(200).json({
-    authObject: auth,
-  });
-};
-
-const youtubeUpload = (auth, res, fileAttributes) => {
+const youtubeUpload = (auth, res, fileAttributes = {}) => {
   try {
     // const { path } = fileAttributes;
     const youtube = google.youtube({ version: "v3", auth });
@@ -163,15 +128,10 @@ const youtubeUpload = (auth, res, fileAttributes) => {
     youtube.videos.insert(
       {
         resource: {
-          // Video title and description
           snippet: {
-            title: "test 3",
-            description: "des",
+            title: fileAttributes.title,
+            description: fileAttributes.description,
           },
-          // I don't want to spam my subscribers
-          // status: {
-          //   privacyStatus: "private",
-          // },
         },
         // This is for the callback function
         part: "snippet",
@@ -182,15 +142,16 @@ const youtubeUpload = (auth, res, fileAttributes) => {
         },
       },
       (err, data) => {
-        if (err) throw err;
-        console.log(data);
-        console.log("Done.");
+        if (err) {
+          return res.status(500).json({ message: "gagal upload", err });
+        }
         // fs.unlinkSync("uploads/p.mp4");
+        return res.status(200).json({ message: "berhasil upload" });
       }
     );
   } catch (e) {
-    console.log("errr " + e);
+    return res.status(500).json({ message: "gagal upload", err });
   }
 };
 
-module.exports = { getAuth, getAuthUrl, getNewToken };
+module.exports = { getAuthWithCallback, getAuthUrl, getNewToken };

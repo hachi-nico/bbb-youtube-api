@@ -1,7 +1,7 @@
 const { Router } = require("express");
 const { upload } = require("./src/controller/localUploadController");
 const {
-  getAuth,
+  getAuthWithCallback,
   getAuthUrl,
   getNewToken,
 } = require("./src/controller/youtubeUploadController");
@@ -24,7 +24,7 @@ const multerUpload = multer({ storage: storage });
 routes.post("/v1/youtube/upload", multerUpload.single("file"), upload);
 
 // google auth dan callback youtube
-routes.get("/v1/google/get-auth", getAuth);
+routes.get("/v1/google/get-auth", getAuthWithCallback);
 routes.post("/v1/google/get-auth-url", getAuthUrl);
 routes.post("/v1/google/get-new-token", getNewToken);
 routes.get("/v1/google/redirect-uri", (req, res) => {

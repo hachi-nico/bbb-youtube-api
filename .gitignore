@@ -2,6 +2,7 @@
 .sqlbackup
 yarn-error.log
 client-secret-dev.json
+client-secret-2.json
 virtual-airport-342015-3bbc6751a5ba.json
 
 node_modules
