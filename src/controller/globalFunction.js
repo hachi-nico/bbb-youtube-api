@@ -1,15 +1,15 @@
 // jika mengubah scopes hapus dulu json yang tersimpan
-export const SCOPES = [
+const SCOPES = [
   "https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/youtube.upload",
 ];
 
-export const TOKEN_DIR =
+const TOKEN_DIR =
   (process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE) +
   "/.credentials/";
 
-export const TOKEN_PATH = TOKEN_DIR + "mytoken.json";
+const TOKEN_PATH = TOKEN_DIR + "mytoken.json";
 
-export const storeToken = (token) => {
+const storeToken = (token) => {
   try {
     fs.mkdirSync(TOKEN_DIR);
   } catch (err) {
@@ -22,3 +22,5 @@ export const storeToken = (token) => {
     console.log("Token tersimpan ke " + TOKEN_PATH);
   });
 };
+
+module.exports = { SCOPES, TOKEN_DIR, TOKEN_PATH, storeToken };
