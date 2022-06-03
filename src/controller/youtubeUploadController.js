@@ -55,7 +55,7 @@ const authorize = (credentials, callback, res) => {
       });
     } else {
       const oauth2Client = new OAuth2(client_id, client_secret, redirectUrl);
-      oauth2Client.credentials = JSON.parse(token);
+      oauth2Client.setCredentials(JSON.parse(token));
       callback(oauth2Client, res);
     }
   });
@@ -96,7 +96,7 @@ const getNewToken = (req, res) => {
         message: "Gagal saat mendapatkan token dari authurl" + err,
       });
     }
-    oauth2Client.credentials = token;
+    oauth2Client.setCredentials(token);
     storeToken(token);
     getChannel(oauth2Client, res);
   });
