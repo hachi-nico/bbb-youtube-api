@@ -1,9 +1,10 @@
 .env
 .sqlbackup
 yarn-error.log
-client-secret-dev.json
+.client-secret-dev.json
+.listsecret.js
 client-secret-2.json
 virtual-airport-342015-3bbc6751a5ba.json
-
+.client-secret-vegan-market.json
 node_modules
 uploads

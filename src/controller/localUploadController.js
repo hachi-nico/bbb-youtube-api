@@ -6,7 +6,7 @@ const upload = (req, res) => {
       req: req.body,
     });
   } catch (e) {
-    return res.status(500).json({ message: "Error saat upload ke server " + e });
+    return res.status(500).json({ e, message: "Error saat upload ke server" });
   }
 };
 

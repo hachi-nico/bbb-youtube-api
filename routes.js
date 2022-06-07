@@ -21,24 +21,26 @@ const storage = multer.diskStorage({
 const multerUpload = multer({ storage: storage });
 
 // local upload
-routes.post("/v1/youtube/upload", multerUpload.single("file"), upload);
+routes.post("/local-upload", multerUpload.single("file"), upload);
 
 // google auth dan callback youtube
-routes.get("/v1/google/get-auth", getAuthWithCallback);
-routes.post("/v1/google/get-auth-url", getAuthUrl);
-routes.post("/v1/google/get-new-token", getNewToken);
-routes.get("/v1/google/redirect-uri", (req, res) => {
+routes.get("/get-auth-callback", getAuthWithCallback);
+routes.get("/get-auth-url", getAuthUrl);
+routes.post("/get-new-token", getNewToken);
+
+// redirect uri oauth
+routes.get("/google-oauth-redirect-uri", (req, res) => {
   return res.status(200).json({
     message: "This is redirect uris",
   });
 });
 
-// test routes
-routes.get("/", (req, res) => {
-  return res.status(200).json({
-    message:
-      process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE,
-  });
-});
+// // test routes
+// routes.get("/", (req, res) => {
+//   return res.status(200).json({
+//     message:
+//       process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE,
+//   });
+// });
 
 module.exports = routes;

@@ -3,35 +3,107 @@ const { google } = require("googleapis");
 const OAuth2 = google.auth.OAuth2;
 const { SCOPES, TOKEN_PATH, storeToken } = require("./globalFunction");
 
+// endpoint
 const getAuthWithCallback = (req, res) => {
-  const { callbackTypes } = req.query;
+  const { callbackTypes, secretFile } = req.query;
   try {
-    // Load dari file lokal
-    fs.readFile(
-      "client-secret-dev.json",
-      function processClientSecrets(err, content) {
-        if (err) {
-          return res.status(500).json({
-            err,
-            message: "Gagal saat load client secret file",
-          });
-        }
-        if (callbackTypes == "getChannel") {
-          authorize(JSON.parse(content), getChannel, res);
-        } else if (callbackTypes == "youtubeUpload") {
-          authorize(JSON.parse(content), youtubeUpload, res);
-        }
+    // Load credentials file lokal
+    fs.readFile(secretFile, (e, content) => {
+      if (e) {
+        return res.status(500).json({
+          e,
+          message: "Gagal saat load client secret file",
+        });
       }
-    );
+      if (callbackTypes == "getChannel") {
+        authorize(JSON.parse(content), getChannel, res);
+      } else if (callbackTypes == "youtubeUpload") {
+        authorize(JSON.parse(content), youtubeUpload, res);
+      }
+    });
   } catch (e) {
     return res.status(500).json({
-      err,
-      message: "Gagal get auth ",
+      e,
+      message: "Gagal saat load client secret file",
     });
   }
 };
 
-// proses auth
+const getAuthUrl = (req, res) => {
+  const { secretFile } = req.query;
+
+  try {
+    fs.readFile(secretFile, (e, content) => {
+      if (e) {
+        return res.status(500).json({
+          e,
+          message: "Gagal saat load client secret file",
+        });
+      }
+
+      const secret = JSON.parse(content);
+      const oauth2Client = new OAuth2(
+        secret.web.client_id,
+        secret.web.client_secret,
+        secret.web.redirect_uris[0]
+      );
+
+      const authUrl = oauth2Client.generateAuthUrl({
+        access_type: "offline",
+        scope: SCOPES,
+      });
+
+      return res.json({ authUrl });
+    });
+  } catch (e) {
+    return res.status(500).json({
+      e,
+      message: "Gagal saat load client secret file",
+    });
+  }
+};
+
+const getNewToken = (req, res) => {
+  const { secretFile, code } = req.body;
+
+  try {
+    fs.readFile(secretFile, (e, content) => {
+      if (e) {
+        return res.status(500).json({
+          e,
+          message: "Gagal saat load client secret file",
+        });
+      }
+
+      const secret = JSON.parse(content);
+      const oauth2Client = new OAuth2(
+        secret.web.client_id,
+        secret.web.client_secret,
+        secret.web.redirect_uris[0]
+      );
+      oauth2Client.getToken(code, (e, token) => {
+        if (e) {
+          return res.status(500).json({
+            e,
+            message: "Gagal saat mendapatkan token dari authurl",
+          });
+        }
+        oauth2Client.setCredentials(token);
+        storeToken(token);
+        return res
+          .status(200)
+          .json({ message: "berhasil mendapatkan token baru" });
+      });
+    });
+  } catch (e) {
+    return res.status(500).json({
+      e,
+      message: "Gagal saat load client secret file",
+    });
+  }
+};
+
+// depedency function
 const authorize = (credentials, callback, res) => {
   const { client_secret, client_id } = credentials.web;
   const redirectUrl = credentials.web.redirect_uris[0];
@@ -52,47 +124,6 @@ const authorize = (credentials, callback, res) => {
       oauth2Client.setCredentials(JSON.parse(token));
       callback(oauth2Client, res);
     }
-  });
-};
-
-const getAuthUrl = (req, res) => {
-  const { oauth2ClientSecret, oauth2ClientId, oauth2ClientRedirectUrl } =
-    req.body;
-
-  const oauth2Client = new OAuth2(
-    oauth2ClientId,
-    oauth2ClientSecret,
-    oauth2ClientRedirectUrl
-  );
-
-  const authUrl = oauth2Client.generateAuthUrl({
-    access_type: "offline",
-    scope: SCOPES,
-  });
-
-  return res.json({ authUrl });
-};
-
-const getNewToken = (req, res) => {
-  const { oauth2ClientSecret, oauth2ClientId, oauth2ClientRedirectUrl, code } =
-    req.body;
-
-  const oauth2Client = new OAuth2(
-    oauth2ClientId,
-    oauth2ClientSecret,
-    oauth2ClientRedirectUrl
-  );
-
-  oauth2Client.getToken(code, function (err, token) {
-    if (err) {
-      return res.status(500).json({
-        err,
-        message: "Gagal saat mendapatkan token dari authurl",
-      });
-    }
-    oauth2Client.setCredentials(token);
-    storeToken(token);
-    return res.status(200).json({ message: "berhasil mendapatkan token baru" });
   });
 };
 
