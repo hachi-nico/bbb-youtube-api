@@ -1,3 +1,5 @@
+const fs = require("fs");
+
 // jika mengubah scopes hapus dulu json yang tersimpan
 const SCOPES = [
   "https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/youtube.upload",
