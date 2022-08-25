@@ -7,20 +7,13 @@ const { SCOPES, TOKEN_PATH, storeToken } = require("./globalFunction");
 const getAuthWithCallback = (req, res) => {
   const { callbackTypes, secretFile } = req.query;
   try {
-    try {
-      // Load credentials file lokal
-      const content = fs.readFileSync(secretFile);
+    // Load credentials file lokal
+    const content = fs.readFileSync(secretFile);
 
-      if (callbackTypes == "getChannel") {
-        authorize(JSON.parse(content), getChannel, res);
-      } else if (callbackTypes == "youtubeUpload") {
-        authorize(JSON.parse(content), youtubeUpload, res);
-      }
-    } catch (e) {
-      return res.status(500).json({
-        e,
-        message: "Gagal saat load client secret file",
-      });
+    if (callbackTypes == "getChannel") {
+      authorize(JSON.parse(content), getChannel, res);
+    } else if (callbackTypes == "youtubeUpload") {
+      authorize(JSON.parse(content), youtubeUpload, res);
     }
   } catch (e) {
     return res.status(500).json({
