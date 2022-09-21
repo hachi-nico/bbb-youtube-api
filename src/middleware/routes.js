@@ -1,13 +1,11 @@
 const { Router } = require("express");
-const {
-  uploadMiddleware,
-  upload,
-} = require("./src/controller/localUploadController");
+const { upload } = require("../controller/localUploadController");
 const {
   getAuthWithCallback,
   getAuthUrl,
   getNewToken,
-} = require("./src/controller/youtubeUploadController");
+} = require("../controller/youtubeUploadController");
+const { uploadMiddleware } = require("../middleware/uploadMiddleware");
 const routes = Router();
 
 // local upload

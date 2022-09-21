@@ -1,5 +1,5 @@
 const express = require("express");
-const routes = require("./routes");
+const routes = require("./src/middleware/routes");
 const cors = require("cors");
 require("dotenv").config();
 
@@ -11,6 +11,4 @@ app.use(express.json());
 app.use(cors());
 app.use(routes);
 
-app.listen(port, () => {
-  console.log(`Listen to ${port}`);
-});
+app.listen(port, () => console.log(`Listen to ${port}`));
