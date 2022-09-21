@@ -3,7 +3,7 @@ const { google } = require("googleapis");
 const OAuth2 = google.auth.OAuth2;
 const { SCOPES, TOKEN_PATH, storeToken } = require("./globalFunction");
 
-// endpoint
+// controller
 const getAuthWithCallback = (req, res) => {
   const { callbackTypes, secretFile } = req.query;
   try {
