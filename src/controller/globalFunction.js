@@ -1,4 +1,5 @@
 const fs = require("fs");
+const crypto = require("crypto-js");
 
 // jika mengubah scopes hapus dulu json yang tersimpan
 const SCOPES = [
@@ -25,4 +26,24 @@ const storeToken = (token) => {
   });
 };
 
-module.exports = { SCOPES, TOKEN_DIR, TOKEN_PATH, storeToken };
+const encSingle = (plainText) => {
+  return crypto.AES.encrypt(
+    plainText,
+    process.env.VERY_SECRET_TOKEN
+  ).toString();
+};
+
+const decSingle = (hash) => {
+  return crypto.AES.decrypt(hash, process.env.VERY_SECRET_TOKEN).toString(
+    crypto.enc.Utf8
+  );
+};
+
+module.exports = {
+  SCOPES,
+  TOKEN_DIR,
+  TOKEN_PATH,
+  storeToken,
+  decSingle,
+  encSingle,
+};
