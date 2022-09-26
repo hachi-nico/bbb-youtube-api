@@ -5,7 +5,7 @@ const { SCOPES, TOKEN_PATH, storeToken } = require("./globalFunction");
 
 // controller
 const getAuthWithCallback = (req, res) => {
-  const { callbackTypes, secretFile } = req.query;
+  const { callbackTypes, secretFile } = req.body;
   try {
     // Load credentials file lokal
     const content = fs.readFileSync(secretFile);

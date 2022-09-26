@@ -13,7 +13,7 @@ const routes = Router();
 routes.post("/local-upload", uploadMiddleware, upload);
 
 // google auth dan callback youtube
-routes.get("/get-auth-callback", getAuthWithCallback);
+routes.post("/get-auth-callback", getAuthWithCallback);
 routes.get("/get-auth-url", getAuthUrl);
 routes.post("/get-new-token", getNewToken);
 routes.post("/login", login);

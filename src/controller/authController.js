@@ -1,7 +1,13 @@
 const jwt = require("jsonwebtoken");
 
+const dummydb = {
+  username: "nico",
+  password: "U2FsdGVkX19WSkC01wtRjWvQl9HWgNtk9ByGspPjgwo=",
+};
+
 const login = (req, res) => {
-  const { username } = req.body;
+  const { username, password } = req.body;
+  // cek apakah user valid
 
   try {
     const token = jwt.sign({ username }, process.env.SECRET_TOKEN, {
