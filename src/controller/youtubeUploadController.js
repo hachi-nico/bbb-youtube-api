@@ -1,7 +1,13 @@
 const fs = require("fs");
 const { google } = require("googleapis");
 const OAuth2 = google.auth.OAuth2;
-const { SCOPES, TOKEN_PATH, storeToken } = require("./globalFunction");
+const {
+  SCOPES,
+  TOKEN_PATH,
+  storeToken,
+  resError,
+  resSuccess,
+} = require("./globalFunction");
 
 // controller
 const getAuthWithCallback = (req, res) => {
@@ -131,16 +137,12 @@ const getChannel = (auth, res) => {
     },
     function (err, response) {
       if (err) {
-        return res.status(500).json({
-          err,
-          message: "gagal get channel",
-        });
+        return resjson(resError("gagal get channel", err));
       }
       const channels = response.data.items;
-      return res.status(200).json({
-        auth,
-        message: "berhasil get channel " + channels[0].snippet.title,
-      });
+      return res.json(
+        resSuccess("berhasil get channel " + channels[0].snippet.title)
+      );
     }
   );
 };

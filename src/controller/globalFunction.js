@@ -25,9 +25,19 @@ const storeToken = (token) => {
   });
 };
 
+const resSuccess = (message = "", additionalObj = {}) => {
+  return { status: 1, message, ...additionalObj };
+};
+
+const resError = (message = "", additionalObj = {}) => {
+  return { status: 0, message, ...additionalObj };
+};
+
 module.exports = {
   SCOPES,
   TOKEN_DIR,
   TOKEN_PATH,
   storeToken,
+  resError,
+  resSuccess,
 };

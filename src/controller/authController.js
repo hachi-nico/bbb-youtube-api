@@ -1,24 +1,41 @@
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+const { getUser } = require("../model/user");
+const { resError, resSuccess } = require("../controller/globalFunction");
 
-const dummydb = {
-  username: "nico",
-  password: "U2FsdGVkX19WSkC01wtRjWvQl9HWgNtk9ByGspPjgwo=",
-};
-
-const login = (req, res) => {
+const login = async (req, res) => {
   const { username, password } = req.body;
+
   // cek apakah user valid
+  const user = await getUser(username);
+  const validUser = await bcrypt.compare(password, user.password);
 
-  try {
-    const token = jwt.sign({ username }, process.env.SECRET_TOKEN, {
-      expiresIn: "1d",
-      algorithm: "HS256",
-    });
-
-    return res.status(200).json({ token, maessage: "Berhasil Login" });
-  } catch (e) {
-    return res.status(500).json({ e, message: "Gagal saat login" });
+  if (validUser) {
+    try {
+      const token = jwt.sign(
+        { user: user.username, id: user.id },
+        process.env.SECRET_TOKEN,
+        {
+          expiresIn: "5m",
+          algorithm: "HS256",
+        }
+      );
+      return res.json(resSuccess("", { token }));
+    } catch (e) {
+      return res.json(resError("Gagal saat Login"));
+    }
+  } else {
+    resError("Data user tidak valid");
   }
 };
 
-module.exports = { login };
+const createUser = async (req, res) => {
+  const { username, password } = req.body;
+  bcrypt.hash(password, 10, function (err, hash) {
+    return res.json({ hash });
+  });
+  try {
+  } catch (e) {}
+};
+
+module.exports = { login, createUser };

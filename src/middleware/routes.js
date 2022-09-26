@@ -6,7 +6,7 @@ const {
   getNewToken,
 } = require("../controller/youtubeUploadController");
 const { uploadMiddleware } = require("../middleware/uploadMiddleware");
-const { login } = require("../controller/authController");
+const { login, createUser } = require("../controller/authController");
 const routes = Router();
 
 // local upload
@@ -16,7 +16,10 @@ routes.post("/local-upload", uploadMiddleware, upload);
 routes.post("/get-auth-callback", getAuthWithCallback);
 routes.get("/get-auth-url", getAuthUrl);
 routes.post("/get-new-token", getNewToken);
+
+// auth
 routes.post("/login", login);
+routes.post("/create-user", createUser);
 
 // redirect uri oauth
 routes.get("/google-oauth-redirect-uri", (req, res) => {
