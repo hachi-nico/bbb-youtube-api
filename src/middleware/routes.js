@@ -5,7 +5,8 @@ const {
   getAuthUrl,
   getNewToken,
 } = require("../controller/youtubeUploadController");
-const { uploadMiddleware } = require("../middleware/uploadMiddleware");
+const uploadMiddleware = require("../middleware/uploadMiddleware");
+const authMiddleware = require("../middleware/authMiddleware");
 const { login, createUser } = require("../controller/authController");
 const routes = Router();
 
@@ -20,6 +21,11 @@ routes.post("/get-new-token", getNewToken);
 // auth
 routes.post("/login", login);
 routes.post("/create-user", createUser);
+
+// testing routes
+routes.post("/testing", authMiddleware, (req, res) => {
+  return res.send("success");
+});
 
 // redirect uri oauth
 routes.get("/google-oauth-redirect-uri", (req, res) => {

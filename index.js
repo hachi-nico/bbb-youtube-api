@@ -6,7 +6,6 @@ const totalCPUs = require("os").cpus().length;
 const routes = require("./src/middleware/routes");
 
 if (cluster.isMaster) {
-  // Fork workers.
   for (let i = 0; i < totalCPUs; i++) {
     cluster.fork();
   }
@@ -22,19 +21,6 @@ if (cluster.isMaster) {
   app.use(express.json());
   app.use(cors());
   app.use(routes);
-
-  app.get("/api/:n", function (req, res) {
-    let n = parseInt(req.params.n);
-    let count = 0;
-
-    if (n > 5000000000) n = 5000000000;
-
-    for (let i = 0; i <= n; i++) {
-      count += i;
-    }
-
-    res.send(`Final count is ${count}`);
-  });
 
   app.listen(port, () => console.log(`Listen to ${port}`));
 }

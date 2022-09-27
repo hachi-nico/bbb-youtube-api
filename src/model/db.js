@@ -7,4 +7,6 @@ const pool = new Client({
   port: 5432,
 });
 
+pool.connect();
+
 module.exports = pool;

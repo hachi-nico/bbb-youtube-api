@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { getUser } = require("../model/user");
+const { setWhitelist } = require("../model/tokenWhitelist");
 const { resError, resSuccess } = require("../controller/globalFunction");
 
 const login = async (req, res) => {
@@ -11,19 +12,24 @@ const login = async (req, res) => {
   const validUser = await bcrypt.compare(password, user.password);
 
   if (validUser) {
-    try {
-      const token = jwt.sign(
-        { user: user.username, id: user.id },
-        process.env.SECRET_TOKEN,
-        {
-          expiresIn: "5m",
-          algorithm: "HS256",
+    jwt.sign(
+      { user: user.username, id: user.id, tipe: user.tipe },
+      process.env.SECRET_TOKEN,
+      {
+        expiresIn: 60 * 3,
+        algorithm: "HS256",
+      },
+      async (err, token) => {
+        if (err) return res.json(resError("Gagal saat Login"));
+
+        try {
+          setWhitelist(token);
+        } catch (e) {
+          return res.json(resError("Gagal saat Login"));
         }
-      );
-      return res.json(resSuccess("", { token }));
-    } catch (e) {
-      return res.json(resError("Gagal saat Login"));
-    }
+        return res.json(resSuccess("Berhasil Login", { token }));
+      }
+    );
   } else {
     resError("Data user tidak valid");
   }

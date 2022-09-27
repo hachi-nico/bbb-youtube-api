@@ -16,4 +16,4 @@ const uploadMiddleware = async () => {
   multerUpload.single("file");
 };
 
-module.exports = { uploadMiddleware };
+module.exports = uploadMiddleware;
