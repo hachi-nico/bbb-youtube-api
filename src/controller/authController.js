@@ -16,7 +16,7 @@ const login = async (req, res) => {
       { user: user.username, id: user.id, tipe: user.tipe },
       process.env.SECRET_TOKEN,
       {
-        expiresIn: 60 * 3,
+        expiresIn: "3 days",
         algorithm: "HS256",
       },
       async (err, token) => {

@@ -12,4 +12,16 @@ const getUser = async (username) => {
   }
 };
 
-module.exports = { getUser };
+const createUser = async (username, password, tipe) => {
+  try {
+    await db.query(
+      "INSERT INTO public.user (username,password,tipe) VALUES ($1,$2,$3)",
+      [username, password, tipe]
+    );
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
+module.exports = { getUser, createUser };
