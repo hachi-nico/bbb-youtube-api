@@ -7,7 +7,7 @@ const {
 } = require("../controller/youtubeUploadController");
 const uploadMiddleware = require("../middleware/uploadMiddleware");
 const authMiddleware = require("../middleware/authMiddleware");
-const { login, createUser } = require("../controller/authController");
+const { login, createUser, logout } = require("../controller/authController");
 const routes = Router();
 
 // local upload
@@ -21,6 +21,7 @@ routes.post("/get-new-token", getNewToken);
 // auth
 routes.post("/login", login);
 routes.post("/create-user", createUser);
+routes.post("/logout", logout);
 
 // testing routes
 routes.post("/testing", authMiddleware, (req, res) => {
