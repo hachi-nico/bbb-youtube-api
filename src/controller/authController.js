@@ -2,11 +2,10 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { getUser } = require("../model/user");
 const { setWhitelist, deleteWhitelist } = require("../model/tokenWhitelist");
-const { resError, resSuccess } = require("../controller/globalFunction");
+const { resError, resSuccess } = require("./globalFunction");
 
 const login = async (req, res) => {
   const { username, password } = req.body;
-
   // cek apakah user valid
   const user = await getUser(username);
   let validUser = false;
@@ -49,13 +48,4 @@ const logout = async (req, res) => {
   return res.status(200).json(resSuccess("Berhasil Logout"));
 };
 
-const createUser = async (req, res) => {
-  const { username, password } = req.body;
-  bcrypt.hash(password, 10, function (err, hash) {
-    return res.json({ hash });
-  });
-  try {
-  } catch (e) {}
-};
-
-module.exports = { login, createUser, logout };
+module.exports = { login, logout };

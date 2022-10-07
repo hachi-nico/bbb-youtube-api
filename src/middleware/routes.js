@@ -5,9 +5,15 @@ const {
   getAuthUrl,
   getNewToken,
 } = require("../controller/youtubeUploadController");
+const { login, logout } = require("../controller/authController");
+const {
+  actionUserList,
+  actionAddUser,
+  actionUpdateUser,
+  actionDeleteUser,
+} = require("../controller/userController");
 const uploadMiddleware = require("../middleware/uploadMiddleware");
 const authMiddleware = require("../middleware/authMiddleware");
-const { login, createUser, logout } = require("../controller/authController");
 const routes = Router();
 
 // local upload
@@ -20,13 +26,13 @@ routes.post("/get-new-token", getNewToken);
 
 // auth
 routes.post("/login", login);
-routes.post("/create-user", createUser);
 routes.post("/logout", logout);
 
-// testing routes
-routes.post("/testing", authMiddleware, (req, res) => {
-  return res.send("success");
-});
+// user
+routes.post("/user-list", authMiddleware, actionUserList);
+routes.post("/add-user", authMiddleware, actionAddUser);
+routes.post("/update-user", authMiddleware, actionUpdateUser);
+routes.post("/delete-user", authMiddleware, actionDeleteUser);
 
 // redirect uri oauth
 routes.get("/google-oauth-redirect-uri", (req, res) => {

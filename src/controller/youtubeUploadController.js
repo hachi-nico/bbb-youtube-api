@@ -151,13 +151,12 @@ const youtubeUpload = (auth, res, fileAttributes = {}) => {
   try {
     // const { path } = fileAttributes;
     const youtube = google.youtube({ version: "v3", auth });
-    console.log(youtube);
     youtube.videos.insert(
       {
         resource: {
           snippet: {
-            title: fileAttributes.title,
-            description: fileAttributes.description,
+            title: 'Presenstasi SPPA Nico Akbar Prasetyo',
+            description: 'nrp 2103197007',
           },
         },
         // This is for the callback function
@@ -165,7 +164,7 @@ const youtubeUpload = (auth, res, fileAttributes = {}) => {
 
         // Create the readable stream to upload the video
         media: {
-          body: fs.createReadStream("uploads/p.mp4"),
+          body: fs.createReadStream("uploads/video2.mkv"),
         },
       },
       (err, data) => {
