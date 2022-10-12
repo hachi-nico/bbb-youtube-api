@@ -9,7 +9,9 @@ const authMiddleware = async (req, res, next) => {
     const isValid = await getWhitelist(reqToken);
     if (err || !isValid) {
       deleteWhitelist(reqToken);
-      return res.status(500).json(resError("Sesi login telah berakhir"));
+      return res
+        .status(400)
+        .json(resError("Sesi login telah berakhir", { status: 5 }));
     }
 
     if (!err && isValid) next();

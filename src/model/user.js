@@ -1,9 +1,11 @@
 const db = require("../model/db");
+const { toOrdinal } = require("pg-parameterize");
+const e = require("cors");
 
 const getUser = async (username) => {
   try {
     const res = await db.query(
-      "SELECT username,password,tipe FROM public.user WHERE username = $1",
+      "SELECT username,password,tipe FROM public.user WHERE LOWER(username) = LOWER($1)",
       [username]
     );
     return res.rows[0];
@@ -12,13 +14,43 @@ const getUser = async (username) => {
   }
 };
 
-const getUsers = async (limit = 15, offset = 0) => {
+const getUsers = async (
+  limit = 15,
+  offset = 0,
+  usernameParams,
+  tipeParams,
+  namaParams,
+  tglSort
+) => {
   try {
-    const res = await db.query(
-      "SELECT user_id,username,nama,tipe FROM public.user LIMIT $1 OFFSET $2",
-      [limit, offset]
-    );
+    let sql =
+      "SELECT user_id,username,tipe,nama,TO_CHAR(tgl,'DD-MM-YYYY HH24:mm:ss') FROM public.user";
+    let bindParam = [];
 
+    // sorting dan searching
+    if (usernameParams) {
+      sql += " WHERE username like LOWER(?)";
+      bindParam.push("%" + usernameParams + "%");
+    }
+
+    if (tipeParams) {
+      sql += " AND tipe = ?";
+      bindParam.push(tipeParams);
+    }
+
+    if (namaParams) {
+      sql += " AND LOWER(nama) like LOWER(?)";
+      bindParam.push("%" + namaParams + "%");
+    }
+
+    if (tglSort == "ASC") {
+      sql += " ORDER BY tgl ASC LIMIT ? OFFSET ?";
+    } else {
+      sql += " ORDER BY tgl DESC LIMIT ? OFFSET ?";
+    }
+
+    bindParam.push(limit, offset);
+    const res = await db.query(toOrdinal(sql), bindParam);
     return res.rows;
   } catch (e) {
     return false;

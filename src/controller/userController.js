@@ -9,8 +9,16 @@ const {
 } = require("../model/user");
 
 const actionUserList = async (req, res) => {
-  const { limit, offset } = req.body;
-  const users = await getUsers(limit, offset);
+  const { limit, offset, usernameParams, tipeParams, namaParams, tglSort } =
+    req.body;
+  let users = await getUsers(
+    limit,
+    offset,
+    usernameParams,
+    tipeParams,
+    namaParams,
+    tglSort
+  );
 
   if (!users)
     return res
