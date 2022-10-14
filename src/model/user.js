@@ -14,42 +14,37 @@ const getUser = async (username) => {
   }
 };
 
-const getUsers = async (
-  limit = 15,
-  offset = 0,
-  usernameParams,
-  tipeParams,
-  namaParams,
-  tglSort
-) => {
+const getUsers = async (limit = false, offset = 0, search, tipe, tglSort) => {
   try {
     let sql =
-      "SELECT user_id,username,tipe,nama,TO_CHAR(tgl,'DD-MM-YYYY HH24:mm:ss') FROM public.user";
+      "SELECT user_id,username,tipe,nama, TO_CHAR(tgl,'YYYY-MM-DD HH24:mm:ss') as tgl FROM public.user WHERE";
     let bindParam = [];
 
-    // sorting dan searching
-    if (usernameParams) {
-      sql += " WHERE username like LOWER(?)";
-      bindParam.push("%" + usernameParams + "%");
+    if (tipe) {
+      sql += " tipe IN(?)";
+      bindParam.push(tipe);
+    } else {
+      sql += " tipe IN(1,2,3)";
     }
 
-    if (tipeParams) {
-      sql += " AND tipe = ?";
-      bindParam.push(tipeParams);
-    }
-
-    if (namaParams) {
-      sql += " AND LOWER(nama) like LOWER(?)";
-      bindParam.push("%" + namaParams + "%");
+    if (search) {
+      sql +=
+        " AND (LOWER(username) like LOWER(?) OR LOWER(nama) like LOWER(?))";
+      bindParam.push("%" + search + "%");
+      bindParam.push("%" + search + "%");
     }
 
     if (tglSort == "ASC") {
-      sql += " ORDER BY tgl ASC LIMIT ? OFFSET ?";
+      sql += " ORDER BY tgl ASC";
     } else {
-      sql += " ORDER BY tgl DESC LIMIT ? OFFSET ?";
+      sql += " ORDER BY tgl DESC";
     }
 
-    bindParam.push(limit, offset);
+    if (limit) {
+      sql += " LIMIT ? OFFSET ?";
+      bindParam.push(limit, offset);
+    }
+
     const res = await db.query(toOrdinal(sql), bindParam);
     return res.rows;
   } catch (e) {
