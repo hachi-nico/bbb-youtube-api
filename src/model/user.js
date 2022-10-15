@@ -48,6 +48,7 @@ const getUsers = async (limit = false, offset = 0, search, tipe, tglSort) => {
     const res = await db.query(toOrdinal(sql), bindParam);
     return res.rows;
   } catch (e) {
+    console.log(e);
     return false;
   }
 };
