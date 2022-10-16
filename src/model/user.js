@@ -35,9 +35,9 @@ const getUsers = async (limit = false, offset = 0, search, tipe, tglSort) => {
     }
 
     if (tglSort == "ASC") {
-      sql += " ORDER BY tgl ASC";
+      sql += " ORDER BY user_id ASC";
     } else {
-      sql += " ORDER BY tgl DESC";
+      sql += " ORDER BY user_id DESC";
     }
 
     if (limit) {
