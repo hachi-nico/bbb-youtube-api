@@ -1,4 +1,5 @@
 const { Router } = require("express");
+
 const { upload } = require("../controller/localUploadController");
 const {
   getAuthWithCallback,
@@ -12,8 +13,14 @@ const {
   actionUpdateUser,
   actionDeleteUser,
 } = require("../controller/userController");
+const { listenRecordingReady } = require("../controller/bbbWebhookController");
+
 const uploadMiddleware = require("../middleware/uploadMiddleware");
 const authMiddleware = require("../middleware/authMiddleware");
+const {
+  recordingReadyMiddleware,
+} = require("../middleware/callbackMiddleware");
+
 const routes = Router();
 
 // local upload
@@ -33,6 +40,13 @@ routes.post("/user-list", authMiddleware, actionUserList);
 routes.post("/add-user", authMiddleware, actionAddUser);
 routes.post("/update-user", authMiddleware, actionUpdateUser);
 routes.post("/delete-user", authMiddleware, actionDeleteUser);
+
+// callback
+routes.post(
+  "/callback-recording-ready",
+  recordingReadyMiddleware,
+  listenRecordingReady
+);
 
 // redirect uri oauth
 routes.get("/google-oauth-redirect-uri", (req, res) => {
