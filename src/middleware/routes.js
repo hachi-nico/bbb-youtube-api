@@ -1,4 +1,6 @@
 const { Router } = require("express");
+const multer = require("multer");
+const path = require("path");
 
 const { upload } = require("../controller/localUploadController");
 const {
@@ -22,9 +24,35 @@ const {
 } = require("../middleware/callbackMiddleware");
 
 const routes = Router();
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/");
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname));
+  },
+});
+
+const progressMiddleware = (req, res, next) => {
+  let progress = 0;
+  const file_size = req.headers["content-length"];
+
+  req.on("data", (chunk) => {
+    progress += chunk.length;
+    const percentage = (progress / file_size) * 100;
+  });
+
+  // invoke next middleware
+  next();
+};
 
 // local upload
-routes.post("/local-upload", uploadMiddleware, upload);
+routes.post(
+  "/local-upload",
+  progressMiddleware,
+  multer({ storage: storage }).single("file"),
+  upload
+);
 
 // google auth dan callback youtube
 routes.post("/get-auth-callback", getAuthWithCallback);
@@ -54,5 +82,19 @@ routes.get("/google-oauth-redirect-uri", (req, res) => {
     message: "This is redirect uris",
   });
 });
+
+// heavy call test
+// routes.get("/api/:n", function (req, res) {
+//   let n = parseInt(req.params.n);
+//   let count = 0;
+
+//   if (n > 5000000000) n = 5000000000;
+
+//   for (let i = 0; i <= n; i++) {
+//     count += i;
+//   }
+
+//   res.send(`Final count is ${count}`);
+// });
 
 module.exports = routes;
