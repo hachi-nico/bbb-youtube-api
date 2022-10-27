@@ -15,7 +15,7 @@ const {
   actionUpdateUser,
   actionDeleteUser,
 } = require("../controller/userController");
-const { listenRecordingReady } = require("../controller/bbbWebhookController");
+const { listenRecordingReady } = require("../controller/bbbCallbackController");
 
 const uploadMiddleware = require("../middleware/uploadMiddleware");
 const authMiddleware = require("../middleware/authMiddleware");
@@ -70,11 +70,7 @@ routes.post("/update-user", authMiddleware, actionUpdateUser);
 routes.post("/delete-user", authMiddleware, actionDeleteUser);
 
 // callback
-routes.post(
-  "/callback-recording-ready",
-  recordingReadyMiddleware,
-  listenRecordingReady
-);
+routes.post("/callback-recording-ready", listenRecordingReady);
 
 // redirect uri oauth
 routes.get("/google-oauth-redirect-uri", (req, res) => {
