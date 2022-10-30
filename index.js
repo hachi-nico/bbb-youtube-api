@@ -20,7 +20,6 @@ if (cluster.isMaster) {
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
   app.use(cors());
-  app.use("/bbbytapi", routes);
   app.use(routes);
 
   app.listen(port, () => console.log(`Listen to ${port}`));

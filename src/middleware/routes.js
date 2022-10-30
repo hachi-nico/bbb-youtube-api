@@ -1,6 +1,7 @@
 const { Router } = require("express");
 const multer = require("multer");
 const path = require("path");
+const fs = require("fs");
 
 const { upload } = require("../controller/localUploadController");
 const {
@@ -17,11 +18,13 @@ const {
 } = require("../controller/userController");
 const { listenRecordingReady } = require("../controller/bbbCallbackController");
 
-const uploadMiddleware = require("../middleware/uploadMiddleware");
 const authMiddleware = require("../middleware/authMiddleware");
+
 const {
-  recordingReadyMiddleware,
-} = require("../middleware/callbackMiddleware");
+  apiCall,
+  BASE_BBB,
+  hashBBBSecret,
+} = require("../controller/globalFunction");
 
 const routes = Router();
 const storage = multer.diskStorage({
@@ -77,6 +80,16 @@ routes.get("/google-oauth-redirect-uri", (req, res) => {
   return res.status(200).json({
     message: "This is redirect uris",
   });
+});
+
+routes.post("/testing", async (req, res) => {
+  // const secret = hashBBBSecret(process.env.BBB_SECRET);
+  // const data = await apiCall(
+  //   BASE_BBB +
+  //     'api/create?allowStartStopRecording=true&attendeePW=ap&autoStartRecording=false&meetingID=random-2228532&meta_bbb-recording-ready-url=https%253A%252F%252Fconference16.ethol.pens.ac.id%252Fbbbytapi%252Fcallback-recording-ready&moderatorPW=mp&name=random-2228532&record=true&voiceBridge=77237&welcome=%3Cbr%3EWelcome+to+%3Cb%3E%25%25CONFNAME%25%25%3C%2Fb%3E%21&checksum=a661e4a2f0635793fb037f0c4d637892f285f40a'
+  // );
+  // const recording = fs.readFileSync("/var/www/note.txt", "utf8");
+  // return res.json({ recording });
 });
 
 // heavy call test
