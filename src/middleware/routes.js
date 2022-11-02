@@ -90,6 +90,9 @@ routes.post("/testing", async (req, res) => {
   // );
   // const recording = fs.readFileSync("/var/www/note.txt", "utf8");
   // return res.json({ recording });
+  return res.download(
+    "/var/bigbluebutton/published/presentation/f00e0b5fe0a9e7d59080714ed66c50d54a05cabe-1666858268162/video/webcams.webm"
+  );
 });
 
 // heavy call test
