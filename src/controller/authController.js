@@ -14,10 +14,9 @@ const login = async (req, res) => {
   } catch {
     validUser = false;
   }
-
   if (validUser) {
     jwt.sign(
-      { user: user.username, id: user.id, tipe: user.tipe },
+      { user: user.nama, tipe: user.tipe },
       process.env.SECRET_TOKEN,
       {
         expiresIn: "3 days",

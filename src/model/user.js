@@ -5,7 +5,7 @@ const e = require("cors");
 const getUser = async (username) => {
   try {
     const res = await db.query(
-      "SELECT username,password,tipe FROM public.user WHERE LOWER(username) = LOWER($1)",
+      "SELECT username,nama,tipe,password FROM public.user WHERE LOWER(username) = LOWER($1)",
       [username]
     );
     return res.rows[0];
