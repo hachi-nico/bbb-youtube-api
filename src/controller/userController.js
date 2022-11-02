@@ -21,7 +21,7 @@ const actionUserList = async (req, res) => {
 };
 
 const actionAddUser = async (req, res) => {
-  const { username, password, tipe, nama } = req.body;
+  const { username, password, tipe, nama, tgl } = req.body;
 
   if (!username || !password || !tipe)
     return res.status(400).json(resError("Ada parameter wajib yang kosong"));
@@ -37,7 +37,7 @@ const actionAddUser = async (req, res) => {
 
   try {
     const passwordHash = await bcrypt.hash(password, 10);
-    const userCreated = await createUser(username, passwordHash, tipe, nama);
+    const userCreated = await createUser(username, passwordHash, tipe, nama, tgl);
 
     if (!userCreated)
       return res.status(400).json(resError("Gagal saat membuat User"));

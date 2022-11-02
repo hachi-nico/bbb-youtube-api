@@ -17,9 +17,9 @@ const getAuthWithCallback = (req, res) => {
     const content = fs.readFileSync(secretFile);
 
     if (callbackTypes == "getChannel") {
-      authorize(JSON.parse(content), getChannel, res);
+      authorize(secretFile, JSON.parse(content), getChannel, res);
     } else if (callbackTypes == "youtubeUpload") {
-      authorize(JSON.parse(content), youtubeUpload, res);
+      authorize(secretFile, JSON.parse(content), youtubeUpload, res);
     }
   } catch (e) {
     return res.status(500).json({
@@ -89,7 +89,7 @@ const getNewToken = (req, res) => {
           });
         }
         oauth2Client.setCredentials(token);
-        storeToken(token);
+        storeToken(token, secretFile);
         return res
           .status(200)
           .json({ message: "berhasil mendapatkan token baru" });
@@ -104,12 +104,12 @@ const getNewToken = (req, res) => {
 };
 
 // depedency function
-const authorize = (credentials, callback, res) => {
+const authorize = (secretFile, credentials, callback, res) => {
   const { client_secret, client_id } = credentials.web;
   const redirectUrl = credentials.web.redirect_uris[0];
 
   // Cek apakah sudah ada token yang tersimpan di disk sebelumnya
-  fs.readFile(TOKEN_PATH, function (err, token) {
+  fs.readFile(TOKEN_PATH + secretFile, function (err, token) {
     if (err) {
       // jika belum return credentialnya saja
       return res.status(200).json({
@@ -137,7 +137,7 @@ const getChannel = (auth, res) => {
     },
     function (err, response) {
       if (err) {
-        return resjson(resError("gagal get channel", err));
+        return res.json(resError("gagal get channel", err.response.data));
       }
       const channels = response.data.items;
       return res.json(
@@ -155,8 +155,8 @@ const youtubeUpload = (auth, res, fileAttributes = {}) => {
       {
         resource: {
           snippet: {
-            title: 'Presenstasi SPPA Nico Akbar Prasetyo',
-            description: 'nrp 2103197007',
+            title: "Video hewan lucu untuk anak",
+            description: "direkomendasikan untuk anak anak",
           },
         },
         // This is for the callback function
@@ -171,7 +171,6 @@ const youtubeUpload = (auth, res, fileAttributes = {}) => {
         if (err) {
           return res.status(500).json({ message: "gagal upload", err });
         }
-        // fs.unlinkSync("uploads/p.mp4");
         return res.status(200).json({ message: "berhasil upload" });
       }
     );

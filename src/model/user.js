@@ -53,11 +53,11 @@ const getUsers = async (limit = false, offset = 0, search, tipe, tglSort) => {
   }
 };
 
-const createUser = async (username, password, tipe, nama) => {
+const createUser = async (username, password, tipe, nama, tgl) => {
   try {
     await db.query(
-      "INSERT INTO public.user (username,password,tipe,nama) VALUES ($1,$2,$3,$4)",
-      [username, password, tipe, nama]
+      "INSERT INTO public.user (username,password,tipe,nama,tgl) VALUES ($1,$2,$3,$4,$5)",
+      [username, password, tipe, nama, tgl]
     );
     return true;
   } catch (e) {

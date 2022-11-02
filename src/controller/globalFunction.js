@@ -14,9 +14,9 @@ const TOKEN_DIR =
 
 const BASE_BBB = "https://conference16.ethol.pens.ac.id/bigbluebutton/";
 
-const TOKEN_PATH = TOKEN_DIR + "mytoken.json";
+const TOKEN_PATH = TOKEN_DIR + "token";
 
-const storeToken = (token) => {
+const storeToken = (token, prefix) => {
   try {
     fs.mkdirSync(TOKEN_DIR);
   } catch (err) {
@@ -24,9 +24,8 @@ const storeToken = (token) => {
       throw err;
     }
   }
-  fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
+  fs.writeFile(TOKEN_PATH + prefix, JSON.stringify(token), (err) => {
     if (err) throw err;
-    console.log("Token tersimpan ke " + TOKEN_PATH);
   });
 };
 
