@@ -9,17 +9,21 @@ const {
   resSuccess,
 } = require("./globalFunction");
 
-// controller
 const getAuthWithCallback = (req, res) => {
-  const { callbackTypes, secretFile } = req.body;
+  const { callbackType, secretFile, addtionalData } = req.body;
   try {
-    // Load credentials file lokal
     const content = fs.readFileSync(secretFile);
 
-    if (callbackTypes == "getChannel") {
+    if (callbackType == "getChannel") {
       authorize(secretFile, JSON.parse(content), getChannel, res);
-    } else if (callbackTypes == "youtubeUpload") {
-      authorize(secretFile, JSON.parse(content), youtubeUpload, res);
+    } else if (callbackType == "youtubeUpload") {
+      authorize(
+        secretFile,
+        JSON.parse(content),
+        youtubeUpload,
+        res,
+        addtionalData
+      );
     }
   } catch (e) {
     return res.status(500).json({
@@ -103,15 +107,12 @@ const getNewToken = (req, res) => {
   }
 };
 
-// depedency function
-const authorize = (secretFile, credentials, callback, res) => {
+const authorize = (secretFile, credentials, callback, res, addtionalData) => {
   const { client_secret, client_id } = credentials.web;
   const redirectUrl = credentials.web.redirect_uris[0];
 
-  // Cek apakah sudah ada token yang tersimpan di disk sebelumnya
   fs.readFile(TOKEN_PATH + secretFile, function (err, token) {
     if (err) {
-      // jika belum return credentialnya saja
       return res.status(200).json({
         status: 0,
         message: "Token yang tersimpan tidak ditemukan",
@@ -122,7 +123,7 @@ const authorize = (secretFile, credentials, callback, res) => {
     } else {
       const oauth2Client = new OAuth2(client_id, client_secret, redirectUrl);
       oauth2Client.setCredentials(JSON.parse(token));
-      callback(oauth2Client, res);
+      callback(oauth2Client, res, addtionalData);
     }
   });
 };
@@ -136,9 +137,9 @@ const getChannel = (auth, res) => {
       part: "snippet,contentDetails,statistics",
     },
     function (err, response) {
-      if (err) {
+      if (err)
         return res.json(resError("gagal get channel", err.response.data));
-      }
+
       const channels = response.data.items;
       return res.json(
         resSuccess("berhasil get channel " + channels[0].snippet.title)
@@ -147,9 +148,8 @@ const getChannel = (auth, res) => {
   );
 };
 
-const youtubeUpload = (auth, res, fileAttributes = {}) => {
+const youtubeUpload = (auth, res, addtionalData = {}) => {
   try {
-    // const { path } = fileAttributes;
     const youtube = google.youtube({ version: "v3", auth });
     youtube.videos.insert(
       {
@@ -159,18 +159,14 @@ const youtubeUpload = (auth, res, fileAttributes = {}) => {
             description: "direkomendasikan untuk anak anak",
           },
         },
-        // This is for the callback function
         part: "snippet",
-
-        // Create the readable stream to upload the video
         media: {
           body: fs.createReadStream("uploads/video2.mkv"),
         },
       },
       (err, data) => {
-        if (err) {
-          return res.status(500).json({ message: "gagal upload", err });
-        }
+        if (err) return res.status(500).json({ message: "gagal upload", err });
+
         return res.status(200).json({ message: "berhasil upload" });
       }
     );

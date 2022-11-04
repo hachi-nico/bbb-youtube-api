@@ -28,22 +28,22 @@ const login = async (req, res) => {
         try {
           setWhitelist(token);
         } catch (e) {
-          return res.status(400).json(resError("Gagal saat Login"));
+          return res.status(500).json(resError("Gagal saat Login"));
         }
         return res.json(resSuccess("Berhasil Login", { token }));
       }
     );
   } else {
-    return res.status(400).json(resError("Data user tidak valid"));
+    return res.status(500).json(resError("Data user tidak valid"));
   }
 };
 
 const logout = async (req, res) => {
   const { token = "" } = req.body;
-  if (!token) return res.status(400).json(resError("Gagal saat Logout"));
+  if (!token) return res.status(500).json(resError("Gagal saat Logout"));
 
   const deleted = await deleteWhitelist(req.body.token);
-  if (!deleted) return res.status(400).json(resError("Gagal saat Logout"));
+  if (!deleted) return res.status(500).json(resError("Gagal saat Logout"));
   return res.status(200).json(resSuccess("Berhasil Logout"));
 };
 
