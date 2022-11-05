@@ -10,7 +10,13 @@ const {
 } = require("./globalFunction");
 
 const getAuthWithCallback = (req, res) => {
-  const { callbackType, secretFile, addtionalData } = req.body;
+  const {
+    callbackType,
+    secretFile,
+    addtionalData = {},
+    bbbCallbackBody = "",
+  } = req.body;
+
   try {
     const content = fs.readFileSync(secretFile);
 
@@ -24,6 +30,8 @@ const getAuthWithCallback = (req, res) => {
         res,
         addtionalData
       );
+    } else {
+      return res.status(500).json(resError("Tipe callback tidak valid"));
     }
   } catch (e) {
     return res.status(500).json({

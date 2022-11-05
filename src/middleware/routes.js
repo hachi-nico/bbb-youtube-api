@@ -45,7 +45,6 @@ const progressMiddleware = (req, res, next) => {
     const percentage = (progress / file_size) * 100;
   });
 
-  // invoke next middleware
   next();
 };
 
@@ -90,23 +89,10 @@ routes.post("/testing", async (req, res) => {
   // );
   // const recording = fs.readFileSync("/var/www/note.txt", "utf8");
   // return res.json({ recording });
-  return res.download(
-    "/var/bigbluebutton/published/presentation/f00e0b5fe0a9e7d59080714ed66c50d54a05cabe-1666858268162/video/webcams.webm"
-  );
+  // return res.download(
+  // );
 });
 
-// heavy call test
-// routes.get("/api/:n", function (req, res) {
-//   let n = parseInt(req.params.n);
-//   let count = 0;
 
-//   if (n > 5000000000) n = 5000000000;
-
-//   for (let i = 0; i <= n; i++) {
-//     count += i;
-//   }
-
-//   res.send(`Final count is ${count}`);
-// });
 
 module.exports = routes;
