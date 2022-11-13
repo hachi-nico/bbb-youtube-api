@@ -59,7 +59,7 @@ const listenRecordingReady = async (req, res) => {
   } catch (e) {
     return res
       .status(500)
-      .json(ressError("Gagal saat melakukan action callback"));
+      .json(resError("Gagal saat melakukan action callback"));
   }
 };
 

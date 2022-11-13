@@ -1,7 +1,7 @@
 const { Router } = require("express");
 const multer = require("multer");
 const path = require("path");
-const fs = require("fs");
+const axios = require("axios");
 
 const { upload } = require("../controller/localUploadController");
 const {
@@ -58,7 +58,7 @@ routes.post(
 );
 
 // laporan
-routes.post("/antrian", actionGetAntrian);
+routes.post("/antrian", authMiddleware, actionGetAntrian);
 
 // google auth dan callback youtube
 routes.post("/get-auth-callback", getAuthWithCallback);
@@ -95,6 +95,17 @@ routes.post("/testing", async (req, res) => {
   // return res.json({ recording });
   // return res.download(
   // );
+  let count = 0;
+  let poller = "";
+  poller = setInterval(async () => {
+    const result = await axios.post("http://localhost:3001/antrian");
+    count += 1;
+    console.log(count);
+    if (count > 3) {
+      clearInterval(poller);
+      return res.status(204).send();
+    }
+  }, 1000);
 });
 
 module.exports = routes;

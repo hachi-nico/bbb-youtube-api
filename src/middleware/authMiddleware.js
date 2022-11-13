@@ -8,7 +8,7 @@ const authMiddleware = async (req, res, next) => {
   jwt.verify(reqToken, process.env.SECRET_TOKEN, async (err, data) => {
     const isValid = await getWhitelist(reqToken);
     if (err || !isValid) {
-      deleteWhitelist(reqToken);
+      await deleteWhitelist(reqToken);
       return res
         .status(500)
         .json(resError("Sesi login telah berakhir", { status: 5 }));
