@@ -12,10 +12,22 @@ const getCurrentUploading = async () => {
   }
 };
 
-const getUsers = async (limit = false, offset = 0, search, tipe, tglSort) => {
+const getAntrian = async () => {
+  try {
+    const res = await db.query(
+      "SELECT judul, deskripsi, tgl_upload from public.laporan_upload WHERE status IN(2,4) ORDER BY id_laporan DESC"
+    );
+    return res.rows;
+  } catch (e) {
+    console.log(e);
+    return false;
+  }
+};
+
+const getLaporan = async (limit = false, offset = 0, search, tipe, tglSort) => {
   try {
     let sql =
-      "SELECT user_id,username,tipe,nama, TO_CHAR(tgl,'YYYY-MM-DD HH24:mm:ss') as tgl FROM public.user WHERE";
+      "SELECT a.judul,a.deskripsi,a.tgl_upload, TO_CHAR(tgl,'YYYY-MM-DD HH24:mm:ss') as tgl FROM public.user WHERE";
     let bindParam = [];
 
     if (tipe) {
@@ -114,4 +126,6 @@ module.exports = {
   updateStatusLaporan,
   updateUrlLaporan,
   getCurrentUploading,
+  getLaporan,
+  getAntrian,
 };
