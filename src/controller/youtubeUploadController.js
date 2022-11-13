@@ -159,22 +159,22 @@ const getChannel = (auth, res) => {
 const youtubeUpload = (auth, res, addtionalData = {}) => {
   try {
     const youtube = google.youtube({ version: "v3", auth });
+    const recordingDirectory = `/var/bigbluebutton/published/presentation/${bbbCallbackBody.record_id}/video/webcams.webm`;
     youtube.videos.insert(
       {
         resource: {
           snippet: {
-            title: "Video hewan lucu untuk anak",
-            description: "direkomendasikan untuk anak anak",
+            title: `Recording meeting ${addtionalData.meeting_id}`,
+            description: `recording bigbluebutton dengan meeting_id ${addtionalData.meeting_id}`,
           },
         },
         part: "snippet",
         media: {
-          body: fs.createReadStream("uploads/video2.mkv"),
+          body: fs.createReadStream(recordingDirectory),
         },
       },
       (err, data) => {
         if (err) return res.status(500).json({ message: "gagal upload", err });
-
         return res.status(200).json({ message: "berhasil upload" });
       }
     );

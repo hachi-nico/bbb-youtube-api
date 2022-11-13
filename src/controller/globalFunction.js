@@ -3,6 +3,8 @@ const axios = require("axios");
 const convert = require("xml-js");
 const sha1 = require("crypto-js/sha1");
 
+const insertDateTimeFormat = "YYYY-MM-DD HH:mm:ss";
+
 // jika mengubah scopes hapus dulu json yang tersimpan
 const SCOPES = [
   "https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/youtube.upload",
@@ -68,4 +70,5 @@ module.exports = {
   resSuccess,
   apiCall,
   hashBBBSecret,
+  insertDateTimeFormat,
 };

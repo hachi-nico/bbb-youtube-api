@@ -1,11 +1,10 @@
 const db = require("../model/db");
 const { toOrdinal } = require("pg-parameterize");
 
-const getUser = async (username) => {
+const getCurrentUploading = async () => {
   try {
     const res = await db.query(
-      "SELECT username,nama,tipe,password FROM public.user WHERE LOWER(username) = LOWER($1)",
-      [username]
+      "SELECT id_laporan FROM public.laporan_upload WHERE status = 2"
     );
     return res.rows[0];
   } catch (e) {
@@ -52,11 +51,32 @@ const getUsers = async (limit = false, offset = 0, search, tipe, tglSort) => {
   }
 };
 
-const createUser = async (username, password, tipe, nama, tgl) => {
+const createLaporan = async (
+  judul,
+  deskripsi,
+  durasi,
+  tglUpload,
+  url,
+  status,
+  idUser
+) => {
   try {
     await db.query(
-      "INSERT INTO public.user (username,password,tipe,nama,tgl) VALUES ($1,$2,$3,$4,$5)",
-      [username, password, tipe, nama, tgl]
+      "INSERT INTO public.laporan_upload (judul,deskripsi,durasi,tgl_upload,url,status,id_user) VALUES ($1,$2,$3,$4,$5,$6,$7)",
+      [judul, deskripsi, durasi, tglUpload, url, status, idUser]
+    );
+    return true;
+  } catch (e) {
+    console.log(e);
+    return false;
+  }
+};
+
+const updateLaporan = async (judul, deskripsi, idLaporan) => {
+  try {
+    await db.query(
+      "UPDATE public.laporan_upload SET judul = $1, deskripsi = $2 WHERE id_laporan user_id= $3",
+      [judul, deskripsi, idLaporan]
     );
     return true;
   } catch (e) {
@@ -64,11 +84,11 @@ const createUser = async (username, password, tipe, nama, tgl) => {
   }
 };
 
-const updateUser = async (username, tipe, nama, userId) => {
+const updateStatusLaporan = async (status, idLaporan) => {
   try {
     await db.query(
-      "UPDATE public.user SET username = $1, tipe = $2, nama = $3 WHERE user_id= $4",
-      [username, tipe, nama, userId]
+      "UPDATE public.laporan_upload SET status = $1 WHERE id_laporan= $2",
+      [status, idLaporan]
     );
     return true;
   } catch (e) {
@@ -76,13 +96,22 @@ const updateUser = async (username, tipe, nama, userId) => {
   }
 };
 
-const deleteUser = async (userId) => {
+const updateUrlLaporan = async (url, idLaporan) => {
   try {
-    await db.query("DELETE FROM public.user WHERE user_id = $1", [userId]);
+    await db.query(
+      "UPDATE public.laporan_upload SET url = $1 WHERE id_laporan= $2",
+      [url, idLaporan]
+    );
     return true;
   } catch (e) {
     return false;
   }
 };
 
-module.exports = { getUser, createUser, getUsers, updateUser, deleteUser };
+module.exports = {
+  createLaporan,
+  updateLaporan,
+  updateStatusLaporan,
+  updateUrlLaporan,
+  getCurrentUploading,
+};
