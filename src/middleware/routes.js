@@ -1,7 +1,7 @@
 const { Router } = require("express");
 const multer = require("multer");
 const path = require("path");
-const axios = require("axios");
+const jwt = require("jsonwebtoken");
 
 const { upload } = require("../controller/localUploadController");
 const {
@@ -86,26 +86,12 @@ routes.get("/google-oauth-redirect-uri", (req, res) => {
 });
 
 routes.post("/testing", async (req, res) => {
-  // const secret = hashBBBSecret(process.env.BBB_SECRET);
-  // const data = await apiCall(
-  //   BASE_BBB +
-  //     'api/create?allowStartStopRecording=true&attendeePW=ap&autoStartRecording=false&meetingID=random-2228532&meta_bbb-recording-ready-url=https%253A%252F%252Fconference16.ethol.pens.ac.id%252Fbbbytapi%252Fcallback-recording-ready&moderatorPW=mp&name=random-2228532&record=true&voiceBridge=77237&welcome=%3Cbr%3EWelcome+to+%3Cb%3E%25%25CONFNAME%25%25%3C%2Fb%3E%21&checksum=a661e4a2f0635793fb037f0c4d637892f285f40a'
-  // );
-  // const recording = fs.readFileSync("/var/www/note.txt", "utf8");
-  // return res.json({ recording });
-  // return res.download(
-  // );
-  let count = 0;
-  let poller = "";
-  poller = setInterval(async () => {
-    const result = await axios.post("http://localhost:3001/antrian");
-    count += 1;
-    console.log(count);
-    if (count > 3) {
-      clearInterval(poller);
-      return res.status(204).send();
-    }
-  }, 1000);
+  let bbbCallbackBody = "";
+  if (req.body.signed_parameters)
+    bbbCallbackBody = jwt.decode(req.body.signed_parameters);
+
+  console.log(bbbCallbackBody, "callback body");
+  return res.status(204).send();
 });
 
 module.exports = routes;

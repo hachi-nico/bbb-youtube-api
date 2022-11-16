@@ -10,18 +10,21 @@ const {
 } = require("./globalFunction");
 
 const getAuthWithCallback = (req, res) => {
-  const {
-    callbackType,
-    secretFile,
-    addtionalData = {},
-    bbbCallbackBody = "",
-  } = req.body;
+  const { callbackType, secretFile, addtionalData = {} } = req.body;
 
   try {
     const content = fs.readFileSync(secretFile);
 
     if (callbackType == "getChannel") {
       authorize(secretFile, JSON.parse(content), getChannel, res);
+    } else if (callbackType == "pollVideoStatus") {
+      authorize(
+        secretFile,
+        JSON.parse(content),
+        pollVideoStatus,
+        res,
+        addtionalData
+      );
     } else if (callbackType == "youtubeUpload") {
       authorize(
         secretFile,
@@ -136,6 +139,33 @@ const authorize = (secretFile, credentials, callback, res, addtionalData) => {
   });
 };
 
+const pollVideoStatus = (auth, res, addtionalData) => {
+  const service = google.youtube("v3");
+  service.search.list(
+    {
+      q: addtionalData.searchQuery,
+      auth,
+      maxResults: 1,
+    },
+    function (err, response) {
+      if (err) return res.status(500).json(resError("gagal search video"));
+
+      return res.json({ response });
+    }
+  );
+
+  // let poller = "";
+  // let stopPoller = false;
+  // poller = setInterval(async () => {
+  //   if (result.data.antrian.status == 1) stopPoller = true;
+
+  //   if (stopPoller) {
+  //     clearInterval(poller);
+  //     return res.status(204).send();
+  //   }
+  // }, 300000);
+};
+
 const getChannel = (auth, res) => {
   const service = google.youtube("v3");
   service.channels.list(
@@ -159,7 +189,7 @@ const getChannel = (auth, res) => {
 const youtubeUpload = (auth, res, addtionalData = {}) => {
   try {
     const youtube = google.youtube({ version: "v3", auth });
-    const recordingDirectory = `/var/bigbluebutton/published/presentation/${bbbCallbackBody.record_id}/video/webcams.webm`;
+    const recordingDirectory = `/var/bigbluebutton/published/presentation/${addtionalData.bbbCallbackBody.record_id}/video/webcams.webm`;
     youtube.videos.insert(
       {
         resource: {
@@ -183,4 +213,9 @@ const youtubeUpload = (auth, res, addtionalData = {}) => {
   }
 };
 
-module.exports = { getAuthWithCallback, getAuthUrl, getNewToken };
+module.exports = {
+  getAuthWithCallback,
+  getAuthUrl,
+  getNewToken,
+  pollVideoStatus,
+};

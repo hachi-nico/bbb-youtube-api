@@ -23,10 +23,8 @@ const listenRecordingReady = async (req, res) => {
     record_id: "15b4cf5c8edf2d32bbd4007dc6b82c83a8839345-1667438466508",
   };
 
-  const isUploading = await getCurrentUploading();
-
   const insertLaporan = await createLaporan(
-    bbbCallbackBody.meeting_id,
+    `${bbbCallbackBody.meeting_id} ${dayjs().format(insertDateTimeFormat)}`,
     bbbCallbackBody.record_id,
     "",
     dayjs().format(insertDateTimeFormat),
@@ -40,26 +38,46 @@ const listenRecordingReady = async (req, res) => {
       .status(500)
       .json(resError("Gagal saat melakukan insert laporan"));
 
-  if (isUploading)
-    return res
-      .status(200)
-      .json(resSuccess("Ada Video yang sedang dalam proses upload"));
-  return;
-  try {
-    return await getAuthWithCallback(
-      {
-        body: {
-          addtionalData: bbbCallbackBody,
-          secretFile: ".client-secret-vegan-market.json",
-          callbackType: "youtubeUpload",
+  const isUploading = await getCurrentUploading();
+
+  if (isUploading) {
+    try {
+      return await getAuthWithCallback(
+        {
+          body: {
+            addtionalData: {
+              searchQuery: `${bbbCallbackBody.meeting_id} ${dayjs().format(
+                insertDateTimeFormat
+              )}`,
+            },
+            secretFile: ".client-secret-vegan-market.json",
+            callbackType: "pollVideoStatus",
+          },
         },
-      },
-      res
-    );
-  } catch (e) {
-    return res
-      .status(500)
-      .json(resError("Gagal saat melakukan action callback"));
+        res
+      );
+    } catch (e) {
+      return res
+        .status(500)
+        .json(resError("Gagal saat melakukan action polling"));
+    }
+  } else {
+    try {
+      return await getAuthWithCallback(
+        {
+          body: {
+            addtionalData: bbbCallbackBody,
+            secretFile: ".client-secret-vegan-market.json",
+            callbackType: "youtubeUpload",
+          },
+        },
+        res
+      );
+    } catch (e) {
+      return res
+        .status(500)
+        .json(resError("Gagal saat melakukan action upload"));
+    }
   }
 };
 

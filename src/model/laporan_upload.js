@@ -4,7 +4,7 @@ const { toOrdinal } = require("pg-parameterize");
 const getCurrentUploading = async () => {
   try {
     const res = await db.query(
-      "SELECT id_laporan FROM public.laporan_upload WHERE status = 2"
+      "SELECT id_laporan, judul, TO_CHAR(tgl_upload,'YYYY-MM-DD HH24:mm:ss') as tgl_upload FROM public.laporan_upload WHERE status = 2 LIMIT 1"
     );
     return res.rows[0];
   } catch (e) {
@@ -15,11 +15,10 @@ const getCurrentUploading = async () => {
 const getAntrian = async () => {
   try {
     const res = await db.query(
-      "SELECT judul, deskripsi, tgl_upload from public.laporan_upload WHERE status IN(2,4) ORDER BY id_laporan DESC"
+      "SELECT judul, deskripsi, tgl_upload from public.laporan_upload WHERE status IN(2,4) ORDER BY id_laporan ASC"
     );
     return res.rows;
   } catch (e) {
-    console.log(e);
     return false;
   }
 };
