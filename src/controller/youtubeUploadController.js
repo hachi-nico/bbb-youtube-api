@@ -1,4 +1,5 @@
 const fs = require("fs");
+const cwd = require("path").dirname(require.main.filename);
 const { google } = require("googleapis");
 const OAuth2 = google.auth.OAuth2;
 const {
@@ -12,8 +13,11 @@ const {
 const getAuthWithCallback = (req, res) => {
   const { callbackType, secretFile, addtionalData = {} } = req.body;
 
+  if (!secretFile)
+    return res.status(500).json(resError("Ada parameter wajib yang kosong"));
+
   try {
-    const content = fs.readFileSync(secretFile);
+    const content = fs.readFileSync(cwd + "/" + secretFile);
 
     if (callbackType == "getChannel") {
       authorize(secretFile, JSON.parse(content), getChannel, res);

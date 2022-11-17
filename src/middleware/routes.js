@@ -86,12 +86,13 @@ routes.get("/google-oauth-redirect-uri", (req, res) => {
 });
 
 routes.post("/testing", async (req, res) => {
+  console.log('callback hit !!!');
   let bbbCallbackBody = "";
   if (req.body.signed_parameters)
     bbbCallbackBody = jwt.decode(req.body.signed_parameters);
 
   console.log(bbbCallbackBody, "callback body");
-  return res.status(204).send();
+  return res.status(200).json({});
 });
 
 module.exports = routes;
