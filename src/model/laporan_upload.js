@@ -23,7 +23,13 @@ const getAntrian = async () => {
   }
 };
 
-const getLaporan = async (limit = false, offset = 0, search, tipe, tglSort) => {
+const getLaporan = async (
+  limit = false,
+  offset = 0,
+  search = "",
+  tipe = 0,
+  tglSort = ""
+) => {
   try {
     let sql =
       "SELECT a.judul,a.deskripsi,a.tgl_upload, TO_CHAR(tgl,'YYYY-MM-DD HH24:mm:ss') as tgl FROM public.user WHERE";
@@ -63,13 +69,13 @@ const getLaporan = async (limit = false, offset = 0, search, tipe, tglSort) => {
 };
 
 const createLaporan = async (
-  judul,
-  deskripsi,
-  durasi,
-  tglUpload,
-  url,
-  status,
-  idUser
+  judul = "",
+  deskripsi = "",
+  durasi = "",
+  tglUpload = "",
+  url = "",
+  status = 0,
+  idUser = 0
 ) => {
   try {
     await db.query(
@@ -83,7 +89,7 @@ const createLaporan = async (
   }
 };
 
-const updateLaporan = async (judul, deskripsi, idLaporan) => {
+const updateLaporan = async (judul = "", deskripsi = "", idLaporan = 0) => {
   try {
     await db.query(
       "UPDATE public.laporan_upload SET judul = $1, deskripsi = $2 WHERE id_laporan user_id= $3",
@@ -95,7 +101,7 @@ const updateLaporan = async (judul, deskripsi, idLaporan) => {
   }
 };
 
-const updateStatusLaporan = async (status, idLaporan) => {
+const updateStatusLaporan = async (status = 0, idLaporan = 0) => {
   try {
     await db.query(
       "UPDATE public.laporan_upload SET status = $1 WHERE id_laporan= $2",
@@ -107,7 +113,7 @@ const updateStatusLaporan = async (status, idLaporan) => {
   }
 };
 
-const updateUrlLaporan = async (url, idLaporan) => {
+const updateUrlLaporan = async (url = "", idLaporan = 0) => {
   try {
     await db.query(
       "UPDATE public.laporan_upload SET url = $1 WHERE id_laporan= $2",

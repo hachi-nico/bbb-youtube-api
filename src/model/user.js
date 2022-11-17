@@ -1,7 +1,7 @@
 const db = require("../model/db");
 const { toOrdinal } = require("pg-parameterize");
 
-const getUser = async (username) => {
+const getUser = async (username = "") => {
   try {
     const res = await db.query(
       "SELECT username,nama,tipe,password FROM public.user WHERE LOWER(username) = LOWER($1)",
@@ -13,7 +13,13 @@ const getUser = async (username) => {
   }
 };
 
-const getUsers = async (limit = false, offset = 0, search, tipe, tglSort) => {
+const getUsers = async (
+  limit = false,
+  offset = 0,
+  search = "",
+  tipe = "",
+  tglSort = ""
+) => {
   try {
     let sql =
       "SELECT user_id,username,tipe,nama, TO_CHAR(tgl,'YYYY-MM-DD HH24:mm:ss') as tgl FROM public.user WHERE";
@@ -52,7 +58,13 @@ const getUsers = async (limit = false, offset = 0, search, tipe, tglSort) => {
   }
 };
 
-const createUser = async (username, password, tipe, nama, tgl) => {
+const createUser = async (
+  username = "",
+  password = "",
+  tipe = 0,
+  nama = "",
+  tgl = ""
+) => {
   try {
     await db.query(
       "INSERT INTO public.user (username,password,tipe,nama,tgl) VALUES ($1,$2,$3,$4,$5)",
@@ -64,7 +76,7 @@ const createUser = async (username, password, tipe, nama, tgl) => {
   }
 };
 
-const updateUser = async (username, tipe, nama, userId) => {
+const updateUser = async (username = "", tipe = 0, nama = "", userId = "") => {
   try {
     await db.query(
       "UPDATE public.user SET username = $1, tipe = $2, nama = $3 WHERE user_id= $4",
@@ -76,7 +88,7 @@ const updateUser = async (username, tipe, nama, userId) => {
   }
 };
 
-const deleteUser = async (userId) => {
+const deleteUser = async (userId = 0) => {
   try {
     await db.query("DELETE FROM public.user WHERE user_id = $1", [userId]);
     return true;
