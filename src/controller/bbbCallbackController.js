@@ -11,39 +11,46 @@ const {
   resError,
   resSuccess,
   insertDateTimeFormat,
+  errLogger,
 } = require("../controller/globalFunction");
 
 const listenRecordingReady = async (req, res) => {
   let bbbCallbackBody = "";
-  if (req.body.signed_parameters)
+  if (req.body.signed_parameters) {
     bbbCallbackBody = jwt.decode(req.body.signed_parameters);
+  } else {
+    console.log("Gagal saat melakukan action callback");
+    return res
+      .status(500)
+      .json(resError("Gagal saat melakukan action callback"));
+  }
 
   bbbCallbackBody = {
     meeting_id: "random-7649377",
     record_id: "15b4cf5c8edf2d32bbd4007dc6b82c83a8839345-1667438466508",
   };
 
-  const insertLaporan = await createLaporan(
-    `${bbbCallbackBody.meeting_id} ${dayjs().format(insertDateTimeFormat)}`,
-    bbbCallbackBody.record_id,
-    "",
-    dayjs().format(insertDateTimeFormat),
-    "",
-    isUploading ? 4 : 2,
-    0
-  );
-
-  if (!insertLaporan)
-    return res
-      .status(500)
-      .json(resError("Gagal saat melakukan insert laporan"));
-
   const isUploading = await getCurrentUploading();
 
-  if (isUploading)
-    return res
-      .status(200)
-      .json(resSuccess("Ada video yang sedang di proses upload"));
+  // const insertLaporan = await createLaporan(
+  //   `${bbbCallbackBody.meeting_id} ${dayjs().format(insertDateTimeFormat)}`,
+  //   bbbCallbackBody.record_id,
+  //   dayjs().format(insertDateTimeFormat),
+  //   "",
+  //   isUploading ? 4 : 2,
+  //   0
+  // );
+
+  // if (!insertLaporan)
+  //   return res
+  //     .status(500)
+  //     .json(resError("Gagal saat melakukan insert laporan"));
+
+  // if (isUploading) {
+  //   return res
+  //     .status(200)
+  //     .json(resSuccess("Ada video yang sedang di proses upload"));
+  // }
 
   try {
     return await getAuthWithCallback(
@@ -57,6 +64,7 @@ const listenRecordingReady = async (req, res) => {
       res
     );
   } catch (e) {
+    console.log("Gagal saat melakukan action upload");
     return res.status(500).json(resError("Gagal saat melakukan action upload"));
   }
 };

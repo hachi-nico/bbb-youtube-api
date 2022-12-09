@@ -2,6 +2,7 @@ const fs = require("fs");
 const axios = require("axios");
 const convert = require("xml-js");
 const sha1 = require("crypto-js/sha1");
+const dayjs = require("dayjs");
 
 const insertDateTimeFormat = "YYYY-MM-DD HH:mm:ss";
 
@@ -60,6 +61,27 @@ const hashBBBSecret = (secret) => {
   return sha1(secret).toString();
 };
 
+const errLogger = (val) => {
+  const logValue = `${dayjs().format(insertDateTimeFormat)} : ${val ?? ""} \n`;
+  const cwd = require("path").dirname(require.main.filename);
+  console.log(cwd);
+  try {
+    fs.appendFile(
+      cwd + "/.log/" + dayjs().format("MMM-YYYY").toString() + ".log",
+      logValue,
+      (err) => {
+        if (err)
+          console.log(
+            dayjs().format(insertDateTimeFormat) + " Gagal Saat tulis log"
+          );
+      }
+    );
+    return console.log(logValue);
+  } catch (e) {
+    console.log(dayjs().format(insertDateTimeFormat) + " Gagal Saat tulis log");
+  }
+};
+
 module.exports = {
   SCOPES,
   TOKEN_DIR,
@@ -71,4 +93,5 @@ module.exports = {
   apiCall,
   hashBBBSecret,
   insertDateTimeFormat,
+  errLogger,
 };

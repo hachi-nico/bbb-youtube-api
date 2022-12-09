@@ -82,7 +82,6 @@ const getLaporan = async (
 const createLaporan = async (
   judul = "",
   deskripsi = "",
-  durasi = "",
   tglUpload = "",
   url = "",
   status = 0,
@@ -90,12 +89,11 @@ const createLaporan = async (
 ) => {
   try {
     await db.query(
-      "INSERT INTO public.laporan_upload (judul,deskripsi,durasi,tgl_upload,url,status,id_user) VALUES ($1,$2,$3,$4,$5,$6,$7)",
-      [judul, deskripsi, durasi, tglUpload, url, status, idUser]
+      "INSERT INTO public.laporan_upload (judul,deskripsi,tgl_upload,url,status,id_user) VALUES ($1,$2,$3,$4,$5,$6)",
+      [judul, deskripsi, tglUpload, url, status, idUser]
     );
     return true;
   } catch (e) {
-    console.log(e);
     return false;
   }
 };

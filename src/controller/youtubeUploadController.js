@@ -22,14 +22,6 @@ const getAuthWithCallback = (req, res) => {
 
     if (callbackType == "getChannel") {
       authorize(secretFile, JSON.parse(content), getChannel, res);
-    } else if (callbackType == "pollVideoStatus") {
-      authorize(
-        secretFile,
-        JSON.parse(content),
-        pollVideoStatus,
-        res,
-        addtionalData
-      );
     } else if (callbackType == "youtubeUpload") {
       authorize(
         secretFile,
@@ -39,9 +31,11 @@ const getAuthWithCallback = (req, res) => {
         addtionalData
       );
     } else {
+      console.log("Tipe callback tidak valid");
       return res.status(500).json(resError("Tipe callback tidak valid"));
     }
   } catch (e) {
+    console.log("Gagal saat load client secret file");
     return res.status(500).json({
       e,
       message: "Gagal saat load client secret file",
@@ -167,20 +161,28 @@ const getChannel = (auth, res) => {
 const youtubeUpload = (auth, res, addtionalData = {}) => {
   try {
     const youtube = google.youtube({ version: "v3", auth });
-    const recordingDirectory = `/var/bigbluebutton/published/presentation/${addtionalData.bbbCallbackBody.record_id}/video/webcams.webm`;
+    // const recordingDirectory = `/var/bigbluebutton/published/presentation/${addtionalData.bbbCallbackBody.record_id}/video/webcams.webm`;
+    const recordingDirectory = cwd + "/uploads/1670606474894.AppImage";
     const videoInput = fs.createReadStream(recordingDirectory);
     let progress = 0;
-    const file_size = req.headers["content-length"];
+    const { size } = fs.statSync(recordingDirectory);
 
     videoInput.on("data", (chunk) => {
       progress += chunk.length;
-      const percentage = parseInt((progress / file_size) * 100);
+      const percentage = parseInt((progress / size) * 100);
     });
 
-    videoInput.on("", async () => {
+    videoInput.on("end", async () => {
       const isNextAvailable = await getNextAntrian();
+      if (isNextAvailable) {
+        // call yt insert and change status to uploading
+      } else {
+        // change status only to finish
+        return;
+      }
+      // return res.json({ obj: isNextAvailable });
     });
-
+    return res.json({ obj: "stopppp" });
     youtube.videos.insert(
       {
         resource: {
@@ -200,7 +202,7 @@ const youtubeUpload = (auth, res, addtionalData = {}) => {
       }
     );
   } catch (e) {
-    return res.status(500).json({ message: "gagal upload", err });
+    return res.status(500).json({ message: "gagal upload", e });
   }
 };
 
