@@ -40,44 +40,24 @@ const listenRecordingReady = async (req, res) => {
 
   const isUploading = await getCurrentUploading();
 
-  if (isUploading) {
-    try {
-      return await getAuthWithCallback(
-        {
-          body: {
-            addtionalData: {
-              searchQuery: `${bbbCallbackBody.meeting_id} ${dayjs().format(
-                insertDateTimeFormat
-              )}`,
-            },
-            secretFile: ".client-secret-vegan-market.json",
-            callbackType: "pollVideoStatus",
-          },
+  if (isUploading)
+    return res
+      .status(200)
+      .json(resSuccess("Ada video yang sedang di proses upload"));
+
+  try {
+    return await getAuthWithCallback(
+      {
+        body: {
+          addtionalData: bbbCallbackBody,
+          secretFile: ".client-secret-vegan-market.json",
+          callbackType: "youtubeUpload",
         },
-        res
-      );
-    } catch (e) {
-      return res
-        .status(500)
-        .json(resError("Gagal saat melakukan action polling"));
-    }
-  } else {
-    try {
-      return await getAuthWithCallback(
-        {
-          body: {
-            addtionalData: bbbCallbackBody,
-            secretFile: ".client-secret-vegan-market.json",
-            callbackType: "youtubeUpload",
-          },
-        },
-        res
-      );
-    } catch (e) {
-      return res
-        .status(500)
-        .json(resError("Gagal saat melakukan action upload"));
-    }
+      },
+      res
+    );
+  } catch (e) {
+    return res.status(500).json(resError("Gagal saat melakukan action upload"));
   }
 };
 

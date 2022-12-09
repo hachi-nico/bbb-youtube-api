@@ -12,10 +12,21 @@ const getCurrentUploading = async () => {
   }
 };
 
+const getNextAntrian = async () => {
+  try {
+    const res = await db.query(
+      "SELECT deskripsi FROM public.laporan_upload WHERE status = 4 ORDER BY id_laporan ASC LIMIT 1"
+    );
+    return res.rows[0];
+  } catch (e) {
+    return false;
+  }
+};
+
 const getAntrian = async () => {
   try {
     const res = await db.query(
-      "SELECT judul, deskripsi, tgl_upload from public.laporan_upload WHERE status IN(2,4) ORDER BY id_laporan ASC"
+      "SELECT judul, deskripsi, tgl_upload FROM public.laporan_upload WHERE status IN(2,4) ORDER BY id_laporan ASC"
     );
     return res.rows;
   } catch (e) {
@@ -133,4 +144,5 @@ module.exports = {
   getCurrentUploading,
   getLaporan,
   getAntrian,
+  getNextAntrian,
 };

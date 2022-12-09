@@ -9,6 +9,7 @@ const {
   resError,
   resSuccess,
 } = require("./globalFunction");
+const { getNextAntrian } = require("../model/laporan_upload");
 
 const getAuthWithCallback = (req, res) => {
   const { callbackType, secretFile, addtionalData = {} } = req.body;
@@ -143,33 +144,6 @@ const authorize = (secretFile, credentials, callback, res, addtionalData) => {
   });
 };
 
-const pollVideoStatus = (auth, res, addtionalData) => {
-  const service = google.youtube("v3");
-  service.search.list(
-    {
-      q: addtionalData.searchQuery,
-      auth,
-      maxResults: 1,
-    },
-    function (err, response) {
-      if (err) return res.status(500).json(resError("gagal search video"));
-
-      return res.json({ response });
-    }
-  );
-
-  // let poller = "";
-  // let stopPoller = false;
-  // poller = setInterval(async () => {
-  //   if (result.data.antrian.status == 1) stopPoller = true;
-
-  //   if (stopPoller) {
-  //     clearInterval(poller);
-  //     return res.status(204).send();
-  //   }
-  // }, 300000);
-};
-
 const getChannel = (auth, res) => {
   const service = google.youtube("v3");
   service.channels.list(
@@ -194,6 +168,19 @@ const youtubeUpload = (auth, res, addtionalData = {}) => {
   try {
     const youtube = google.youtube({ version: "v3", auth });
     const recordingDirectory = `/var/bigbluebutton/published/presentation/${addtionalData.bbbCallbackBody.record_id}/video/webcams.webm`;
+    const videoInput = fs.createReadStream(recordingDirectory);
+    let progress = 0;
+    const file_size = req.headers["content-length"];
+
+    videoInput.on("data", (chunk) => {
+      progress += chunk.length;
+      const percentage = parseInt((progress / file_size) * 100);
+    });
+
+    videoInput.on("", async () => {
+      const isNextAvailable = await getNextAntrian();
+    });
+
     youtube.videos.insert(
       {
         resource: {
@@ -204,7 +191,7 @@ const youtubeUpload = (auth, res, addtionalData = {}) => {
         },
         part: "snippet",
         media: {
-          body: fs.createReadStream(recordingDirectory),
+          body: videoInput,
         },
       },
       (err, data) => {
@@ -221,5 +208,4 @@ module.exports = {
   getAuthWithCallback,
   getAuthUrl,
   getNewToken,
-  pollVideoStatus,
 };

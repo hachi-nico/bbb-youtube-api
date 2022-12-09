@@ -1,6 +1,5 @@
 const { Router } = require("express");
 const multer = require("multer");
-const path = require("path");
 const jwt = require("jsonwebtoken");
 
 const { upload } = require("../controller/localUploadController");
@@ -20,6 +19,7 @@ const { listenRecordingReady } = require("../controller/bbbCallbackController");
 const { actionGetAntrian } = require("../controller/laporanUploadController");
 
 const authMiddleware = require("../middleware/authMiddleware");
+const uploadMiddleware = require("../middleware/uploadMiddleware");
 
 const {
   apiCall,
@@ -28,34 +28,9 @@ const {
 } = require("../controller/globalFunction");
 
 const routes = Router();
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname));
-  },
-});
-
-const progressMiddleware = (req, res, next) => {
-  let progress = 0;
-  const file_size = req.headers["content-length"];
-
-  req.on("data", (chunk) => {
-    progress += chunk.length;
-    const percentage = (progress / file_size) * 100;
-  });
-
-  next();
-};
 
 // local upload
-routes.post(
-  "/local-upload",
-  progressMiddleware,
-  multer({ storage: storage }).single("file"),
-  upload
-);
+routes.post("/local-upload", uploadMiddleware, upload);
 
 // laporan
 routes.post("/antrian", authMiddleware, actionGetAntrian);
@@ -86,7 +61,7 @@ routes.get("/google-oauth-redirect-uri", (req, res) => {
 });
 
 routes.post("/testing", async (req, res) => {
-  console.log('callback hit !!!');
+  console.log("callback hit !!!");
   let bbbCallbackBody = "";
   if (req.body.signed_parameters)
     bbbCallbackBody = jwt.decode(req.body.signed_parameters);
