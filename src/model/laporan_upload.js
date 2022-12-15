@@ -29,11 +29,22 @@ const getAntrian = async (offset) => {
       "SELECT judul, deskripsi, TO_CHAR(tgl_upload,'YYYY-MM-DD HH24:mm:ss') AS tgl_upload FROM public.laporan_upload WHERE status IN(2,4) ORDER BY id_laporan ASC";
     const bindParam = [];
     if (offset) {
-      sql += " OFFSET $1 ";
+      sql += " OFFSET $1 LIMIT 30 ";
       bindParam.push(offset);
     }
     const res = await db.query(sql, bindParam);
     return res.rows;
+  } catch (e) {
+    return false;
+  }
+};
+
+const countAntrian = async () => {
+  try {
+    const res = await db.query(
+      "SELECT COUNT(id_laporan) FROM public.laporan_upload WHERE status IN(2,4)"
+    );
+    return res.rows[0];
   } catch (e) {
     return false;
   }
@@ -148,4 +159,5 @@ module.exports = {
   getLaporan,
   getAntrian,
   getNextAntrian,
+  countAntrian,
 };

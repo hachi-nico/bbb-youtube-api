@@ -16,7 +16,10 @@ const {
   actionDeleteUser,
 } = require("../controller/userController");
 const { listenRecordingReady } = require("../controller/bbbCallbackController");
-const { actionGetAntrian } = require("../controller/laporanUploadController");
+const {
+  actionGetAntrian,
+  actionCountAntrian,
+} = require("../controller/laporanUploadController");
 
 const authMiddleware = require("../middleware/authMiddleware");
 const uploadMiddleware = require("../middleware/uploadMiddleware");
@@ -34,6 +37,7 @@ routes.post("/local-upload", uploadMiddleware, upload);
 
 // laporan
 routes.post("/antrian", authMiddleware, actionGetAntrian);
+routes.post("/count-antrian", authMiddleware, actionCountAntrian);
 
 // google auth dan callback youtube
 routes.post("/get-auth-callback", getAuthWithCallback);
