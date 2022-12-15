@@ -4,7 +4,7 @@ const { toOrdinal } = require("pg-parameterize");
 const getCurrentUploading = async () => {
   try {
     const res = await db.query(
-      "SELECT id_laporan, judul, TO_CHAR(tgl_upload,'YYYY-MM-DD HH24:mm:ss') as tgl_upload FROM public.laporan_upload WHERE status = 2 LIMIT 1"
+      "SELECT id_laporan, judul, TO_CHAR(tgl_upload,'YYYY-MM-DD HH24:mm:ss') AS tgl_upload FROM public.laporan_upload WHERE status = 2 LIMIT 1"
     );
     return res.rows[0];
   } catch (e) {
@@ -23,11 +23,16 @@ const getNextAntrian = async () => {
   }
 };
 
-const getAntrian = async () => {
+const getAntrian = async (offset) => {
   try {
-    const res = await db.query(
-      "SELECT judul, deskripsi, TO_CHAR(tgl_upload,'YYYY-MM-DD HH24:mm:ss') FROM public.laporan_upload WHERE status IN(2,4) ORDER BY id_laporan ASC"
-    );
+    let sql =
+      "SELECT judul, deskripsi, TO_CHAR(tgl_upload,'YYYY-MM-DD HH24:mm:ss') AS tgl_upload FROM public.laporan_upload WHERE status IN(2,4) ORDER BY id_laporan ASC";
+    const bindParam = [];
+    if (offset) {
+      sql += " OFFSET $1 ";
+      bindParam.push(offset);
+    }
+    const res = await db.query(sql, bindParam);
     return res.rows;
   } catch (e) {
     return false;
@@ -43,7 +48,7 @@ const getLaporan = async (
 ) => {
   try {
     let sql =
-      "SELECT judul,deskripsi, TO_CHAR(tgl_upload,'YYYY-MM-DD HH24:mm:ss') as tgl FROM public.user WHERE";
+      "SELECT judul,deskripsi, TO_CHAR(tgl_upload,'YYYY-MM-DD HH24:mm:ss') AS tgl_upload FROM public.user WHERE";
     let bindParam = [];
 
     if (tipe) {
