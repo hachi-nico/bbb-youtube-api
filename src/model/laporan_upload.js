@@ -15,7 +15,7 @@ const getCurrentUploading = async () => {
 const getNextAntrian = async () => {
   try {
     const res = await db.query(
-      "SELECT deskripsi FROM public.laporan_upload WHERE status = 4 ORDER BY id_laporan ASC LIMIT 1"
+      "SELECT id_laporan,judul, deskripsi FROM public.laporan_upload WHERE status = 4 ORDER BY id_laporan ASC LIMIT 1"
     );
     return res.rows[0];
   } catch (e) {
@@ -26,7 +26,7 @@ const getNextAntrian = async () => {
 const getAntrian = async () => {
   try {
     const res = await db.query(
-      "SELECT judul, deskripsi, tgl_upload FROM public.laporan_upload WHERE status IN(2,4) ORDER BY id_laporan ASC"
+      "SELECT judul, deskripsi, TO_CHAR(tgl_upload,'YYYY-MM-DD HH24:mm:ss') FROM public.laporan_upload WHERE status IN(2,4) ORDER BY id_laporan ASC"
     );
     return res.rows;
   } catch (e) {
@@ -43,7 +43,7 @@ const getLaporan = async (
 ) => {
   try {
     let sql =
-      "SELECT a.judul,a.deskripsi,a.tgl_upload, TO_CHAR(tgl,'YYYY-MM-DD HH24:mm:ss') as tgl FROM public.user WHERE";
+      "SELECT judul,deskripsi, TO_CHAR(tgl_upload,'YYYY-MM-DD HH24:mm:ss') as tgl FROM public.user WHERE";
     let bindParam = [];
 
     if (tipe) {
@@ -110,11 +110,11 @@ const updateLaporan = async (judul = "", deskripsi = "", idLaporan = 0) => {
   }
 };
 
-const updateStatusLaporan = async (status = 0, idLaporan = 0) => {
+const updateStatusLaporan = async (status = 0, deskripsi = 0) => {
   try {
     await db.query(
-      "UPDATE public.laporan_upload SET status = $1 WHERE id_laporan= $2",
-      [status, idLaporan]
+      "UPDATE public.laporan_upload SET status = $1 WHERE deskripsi = $2",
+      [status, deskripsi]
     );
     return true;
   } catch (e) {

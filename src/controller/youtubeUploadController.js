@@ -8,8 +8,12 @@ const {
   storeToken,
   resError,
   resSuccess,
+  logger,
 } = require("./globalFunction");
-const { getNextAntrian } = require("../model/laporan_upload");
+const {
+  getNextAntrian,
+  updateStatusLaporan,
+} = require("../model/laporan_upload");
 
 const getAuthWithCallback = (req, res) => {
   const { callbackType, secretFile, addtionalData = {} } = req.body;
@@ -158,11 +162,11 @@ const getChannel = (auth, res) => {
   );
 };
 
-const youtubeUpload = (auth, res, addtionalData = {}) => {
+const youtubeUpload = async (auth, res, additionalData = {}) => {
   try {
     const youtube = google.youtube({ version: "v3", auth });
-    // const recordingDirectory = `/var/bigbluebutton/published/presentation/${addtionalData.bbbCallbackBody.record_id}/video/webcams.webm`;
-    const recordingDirectory = cwd + "/uploads/1670606474894.AppImage";
+    // const recordingDirectory = `/var/bigbluebutton/published/presentation/${additionalData.bbbCallbackBody.record_id}/video/webcams.webm`;
+    const recordingDirectory = cwd + "/uploads/p.mp4";
     const videoInput = fs.createReadStream(recordingDirectory);
     let progress = 0;
     const { size } = fs.statSync(recordingDirectory);
@@ -170,25 +174,33 @@ const youtubeUpload = (auth, res, addtionalData = {}) => {
     videoInput.on("data", (chunk) => {
       progress += chunk.length;
       const percentage = parseInt((progress / size) * 100);
+      console.log(percentage);
     });
 
-    videoInput.on("end", async () => {
-      const isNextAvailable = await getNextAntrian();
-      if (isNextAvailable) {
-        // call yt insert and change status to uploading
-      } else {
-        // change status only to finish
-        return;
-      }
-      // return res.json({ obj: isNextAvailable });
-    });
-    return res.json({ obj: "stopppp" });
+    const updated = await updateStatusLaporan(1, additionalData.record_id);
+    if (!updated) {
+      logger("[GSB] Gagal saat update status menjadi berhasil");
+      return res
+        .status(500)
+        .json(resError("Gagal saat update status menjadi berhasil"));
+    }
+
+    const isNextAvailable = await getNextAntrian();
+
+    if (isNextAvailable) {
+      return await youtubeUpload(auth, res, {
+        meeting_id: isNextAvailable.judul,
+        record_id: isNextAvailable.deskripsi,
+      });
+    }
+
+    return res.status(200).json(resSuccess("Berhasil"));
     youtube.videos.insert(
       {
         resource: {
           snippet: {
-            title: `Recording meeting ${addtionalData.meeting_id}`,
-            description: `recording bigbluebutton dengan meeting_id ${addtionalData.meeting_id}`,
+            title: `Recording meeting ${additionalData.meeting_id}`,
+            description: `recording bigbluebutton dengan record_id ${additionalData.record_id}`,
           },
         },
         part: "snippet",
@@ -197,12 +209,15 @@ const youtubeUpload = (auth, res, addtionalData = {}) => {
         },
       },
       (err, data) => {
-        if (err) return res.status(500).json({ message: "gagal upload", err });
-        return res.status(200).json({ message: "berhasil upload" });
+        if (err) {
+          logger("[GAU-2 Gagal saat upload]");
+          return res.status(500).json({ message: "Gagal saat upload", err });
+        }
       }
     );
   } catch (e) {
-    return res.status(500).json({ message: "gagal upload", e });
+    logger("[GAU-3 Gagal saat upload]");
+    return res.status(500).json({ message: "Gagal saat upload", e });
   }
 };
 

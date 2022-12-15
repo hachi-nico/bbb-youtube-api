@@ -61,7 +61,7 @@ const hashBBBSecret = (secret) => {
   return sha1(secret).toString();
 };
 
-const errLogger = (val) => {
+const logger = (val) => {
   const logValue = `${dayjs().format(insertDateTimeFormat)} : ${val ?? ""} \n`;
   const cwd = require("path").dirname(require.main.filename);
   console.log(cwd);
@@ -93,5 +93,5 @@ module.exports = {
   apiCall,
   hashBBBSecret,
   insertDateTimeFormat,
-  errLogger,
+  logger,
 };
