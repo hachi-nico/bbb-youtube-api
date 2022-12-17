@@ -167,15 +167,6 @@ const youtubeUpload = async (auth, res, additionalData = {}) => {
     const youtube = google.youtube({ version: "v3", auth });
     // const recordingDirectory = `/var/bigbluebutton/published/presentation/${additionalData.bbbCallbackBody.record_id}/video/webcams.webm`;
     const recordingDirectory = cwd + "/uploads/p.mp4";
-    const videoInput = fs.createReadStream(recordingDirectory);
-    let progress = 0;
-    const { size } = fs.statSync(recordingDirectory);
-
-    videoInput.on("data", (chunk) => {
-      progress += chunk.length;
-      const percentage = parseInt((progress / size) * 100);
-      console.log(percentage);
-    });
 
     const updated = await updateStatusLaporan(1, additionalData.record_id);
     if (!updated) {
@@ -198,13 +189,13 @@ const youtubeUpload = async (auth, res, additionalData = {}) => {
       {
         resource: {
           snippet: {
-            title: `Recording meeting ${additionalData.meeting_id}`,
-            description: `recording bigbluebutton dengan record_id ${additionalData.record_id}`,
+            title: `${additionalData.meeting_id}`,
+            description: `${additionalData.record_id}`,
           },
         },
         part: "snippet",
         media: {
-          body: videoInput,
+          body: fs.createReadStream(recordingDirectory),
         },
       },
       (err, data) => {

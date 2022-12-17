@@ -64,7 +64,6 @@ const hashBBBSecret = (secret) => {
 const logger = (val) => {
   const logValue = `${dayjs().format(insertDateTimeFormat)} : ${val ?? ""} \n`;
   const cwd = require("path").dirname(require.main.filename);
-  console.log(cwd);
   try {
     fs.appendFile(
       cwd + "/.log/" + dayjs().format("MMM-YYYY").toString() + ".log",

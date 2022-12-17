@@ -26,7 +26,7 @@ const getNextAntrian = async () => {
 const getAntrian = async (offset) => {
   try {
     let sql =
-      "SELECT judul, deskripsi, TO_CHAR(tgl_upload,'YYYY-MM-DD HH24:mm:ss') AS tgl_upload FROM public.laporan_upload WHERE status IN(2,4) ORDER BY id_laporan ASC";
+      "SELECT judul, deskripsi,status, TO_CHAR(tgl_upload,'YYYY-MM-DD HH24:mm:ss') AS tgl_upload FROM public.laporan_upload WHERE status IN(2,4) ORDER BY id_laporan ASC";
     const bindParam = [];
     if (offset) {
       sql += " OFFSET $1 LIMIT 30 ";
