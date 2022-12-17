@@ -1,26 +1,32 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
-const cluster = require("cluster");
-const totalCPUs = require("os").cpus().length;
+
 const routes = require("./src/middleware/routes");
 
-if (cluster.isMaster) {
-  for (let i = 0; i < totalCPUs; i++) {
-    cluster.fork();
-  }
-  cluster.on("exit", (worker, code, signal) => {
-    console.log(`pid ${worker.process.pid} died`);
-    cluster.fork();
+const app = express();
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(cors());
+app.use(routes);
+
+const server = app.listen(process.env.PORT, (err) => {
+  if (err) return console.log("Internal Server Error");
+  console.log(`Listen to ${process.env.PORT}`);
+});
+
+const io = require("socket.io")(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+});
+
+io.on("connection", function (socket) {
+  socket.emit("status", true);
+
+  socket.on("disconnect", function () {
+    socket.emit("status", false);
   });
-} else {
-  const app = express();
-  const port = process.env.PORT;
-
-  app.use(express.urlencoded({ extended: true }));
-  app.use(express.json());
-  app.use(cors());
-  app.use(routes);
-
-  app.listen(port, () => console.log(`Listen to ${port}`));
-}
+});

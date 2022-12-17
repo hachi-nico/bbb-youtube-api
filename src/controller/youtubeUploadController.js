@@ -186,7 +186,6 @@ const youtubeUpload = async (auth, res, additionalData = {}) => {
     }
 
     const isNextAvailable = await getNextAntrian();
-
     if (isNextAvailable) {
       return await youtubeUpload(auth, res, {
         meeting_id: isNextAvailable.judul,
