@@ -3,6 +3,7 @@ const axios = require("axios");
 const convert = require("xml-js");
 const sha1 = require("crypto-js/sha1");
 const dayjs = require("dayjs");
+const webpush = require("web-push");
 
 const insertDateTimeFormat = "YYYY-MM-DD HH:mm:ss";
 
@@ -81,6 +82,18 @@ const logger = (val) => {
   }
 };
 
+const fireNotification = (subs, body) => {
+  const payload = JSON.stringify({ title: "Dashboard Auto Upload", body });
+
+  try {
+    webpush.sendNotification(subs, payload);
+    return res.status(200).json({});
+  } catch (e) {
+    console.log(e);
+    logger("[GMN] Gagal saat mengirim notifikasi");
+  }
+};
+
 module.exports = {
   SCOPES,
   TOKEN_DIR,
@@ -93,4 +106,5 @@ module.exports = {
   hashBBBSecret,
   insertDateTimeFormat,
   logger,
+  fireNotification,
 };

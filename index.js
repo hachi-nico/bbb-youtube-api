@@ -1,14 +1,29 @@
 const express = require("express");
 const cors = require("cors");
 const cron = require("node-cron");
+const webpush = require("web-push");
 require("dotenv").config();
 
-const { routes } = require("./src/middleware/routes");
+const routes = require("./src/middleware/routes");
 
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
+
+// notification
+webpush.setVapidDetails(
+  "mailto:test@test.com",
+  process.env.PUBLIC_VAPID_KEY,
+  process.env.PRIVATE_VAPID_KEY
+);
+
+app.post("/notification-subscribe", (req, res) => {
+  const subscription = req.body;
+  app.set("clientSub", subscription);
+  res.status(200).json({});
+});
+
 app.use(routes);
 
 app.listen(process.env.PORT, (err) => {

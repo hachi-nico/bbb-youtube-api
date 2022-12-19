@@ -9,6 +9,7 @@ const {
   resError,
   resSuccess,
   logger,
+  sendNotification,
 } = require("./globalFunction");
 const {
   getNextAntrian,
@@ -234,6 +235,12 @@ const youtubeUpload = async (auth, res, additionalData = {}) => {
           .status(500)
           .json(resError("Gagal saat update status menjadi berhasil"));
       }
+
+      sendNotification(
+        "Video dengan judul " +
+          additionalData.judul +
+          " telah berhasil di upload ke youtube"
+      );
 
       if (isNextAvailable) {
         await youtubeUpload(auth, res, {
