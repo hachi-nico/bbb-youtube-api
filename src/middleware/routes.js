@@ -1,6 +1,6 @@
 const { Router } = require("express");
-const multer = require("multer");
 const jwt = require("jsonwebtoken");
+const webpush = require("web-push");
 
 const { upload } = require("../controller/localUploadController");
 const {
@@ -64,14 +64,30 @@ routes.get("/google-oauth-redirect-uri", (req, res) => {
   });
 });
 
-routes.post("/testing", async (req, res) => {
-  console.log("callback hit !!!");
-  let bbbCallbackBody = "";
-  if (req.body.signed_parameters)
-    bbbCallbackBody = jwt.decode(req.body.signed_parameters);
+// notification
+webpush.setVapidDetails(
+  "mailto:test@test.com",
+  process.env.PUBLIC_VAPID_KEY,
+  process.env.PRIVATE_VAPID_KEY
+);
 
-  console.log(bbbCallbackBody, "callback body");
+let globalSubscription = "";
+routes.post("/notification-subscribe", (req, res) => {
+  const subscription = req.body;
+  globalSubscription = subscription;
+  res.status(200).json({});
+});
+
+routes.post("/testing", async (req, res) => {
+  const payload = JSON.stringify({
+    title: "Hello World",
+    body: "This is your first push notification",
+  });
+
+  webpush
+    .sendNotification(globalSubscription, payload)
+    .catch((e) => console.log(e));
   return res.status(200).json({});
 });
 
-module.exports = routes;
+module.exports = { routes, globalSubscription };

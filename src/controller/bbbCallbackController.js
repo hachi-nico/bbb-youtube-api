@@ -17,7 +17,6 @@ const { getSecret } = require("../model/google_auth_secret");
 
 const listenRecordingReady = async (req, res) => {
   const secret = await getSecret();
-
   if (!secret) {
     logger("[TST] Tidak ada secret yang tersedia");
     return res.status(200).json(resSuccess("Tidak ada secret yang tersedia"));
@@ -60,11 +59,11 @@ const listenRecordingReady = async (req, res) => {
       .json(resError("Gagal saat melakukan insert laporan"));
   }
 
-  // if (isUploading) {
-  //   return res
-  //     .status(200)
-  //     .json(resSuccess("Ada video yang sedang di proses upload"));
-  // }
+  if (isUploading) {
+    return res
+      .status(200)
+      .json(resSuccess("Ada video yang sedang di proses upload"));
+  }
 
   try {
     return await getAuthWithCallback(

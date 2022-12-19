@@ -3,7 +3,7 @@ const cors = require("cors");
 const cron = require("node-cron");
 require("dotenv").config();
 
-const routes = require("./src/middleware/routes");
+const { routes } = require("./src/middleware/routes");
 
 const app = express();
 app.use(express.urlencoded({ extended: true }));
