@@ -27,12 +27,12 @@ const markExpSecret = async () => {
       "SELECT secret FROM public.google_auth_secret WHERE status = 1 ORDER BY id ASC LIMIT 1"
     );
 
-    const secretUpdated = await db.query(
+    await db.query(
       "UPDATE public.google_auth_secret SET status = 2 WHERE secret = $1",
       [currentSecret.rows[0].secret]
     );
 
-    secretUpdated ? true : false;
+    return true;
   } catch (e) {
     console.log(e);
     return false;

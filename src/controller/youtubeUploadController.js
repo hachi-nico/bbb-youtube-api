@@ -192,17 +192,35 @@ const youtubeUpload = async (auth, res, additionalData = {}) => {
         if (isQuotaExceed) {
           logger("[MSB] Mengambil Secret Berikutnya");
           const updated = await markExpSecret();
-          if (updated) {
-            await youtubeUpload(auth, res, {
-              title: isNextAvailable.judul,
-              desc: isNextAvailable.deskripsi,
-            });
-          } else {
+
+          if (!updated) {
             logger("[GUSS] Gagal saat mengubah status secret");
             return res
               .status(500)
               .json({ message: "Gagal saat mengubah status secret", err });
           }
+
+          const secret = await getSecret();
+          if (!secret) {
+            logger("[TST-2] Tidak ada secret yang tersedia");
+            return res
+              .status(200)
+              .json(resSuccess("Tidak ada secret yang tersedia"));
+          }
+
+          getAuthWithCallback(
+            {
+              body: {
+                addtionalData: {
+                  title: isNextAvailable.judul,
+                  desc: isNextAvailable.deskripsi,
+                },
+                secretFile: secret.secret,
+                callbackType: "youtubeUpload",
+              },
+            },
+            res
+          );
         } else {
           logger("[GAU-2] Gagal saat upload");
           return res.status(500).json({ message: "Gagal saat upload", err });
