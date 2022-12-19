@@ -14,6 +14,7 @@ const {
   getNextAntrian,
   updateStatusLaporan,
 } = require("../model/laporan_upload");
+const { getSecret, markExpSecret } = require("../model/google_auth_secret");
 
 const getAuthWithCallback = (req, res) => {
   const { callbackType, secretFile, addtionalData = {} } = req.body;
@@ -163,52 +164,69 @@ const getChannel = (auth, res) => {
 };
 
 const youtubeUpload = async (auth, res, additionalData = {}) => {
-  try {
-    const youtube = google.youtube({ version: "v3", auth });
-    // const recordingDirectory = `/var/bigbluebutton/published/presentation/${additionalData.bbbCallbackBody.record_id}/video/webcams.webm`;
-    const recordingDirectory = cwd + "/uploads/p.mp4";
+  const youtube = google.youtube({ version: "v3", auth });
+  // const recordingDirectory = `/var/bigbluebutton/published/presentation/${additionalData.desc}/video/webcams.webm`;
+  const recordingDirectory = cwd + "/uploads/p.mp4";
 
-    const updated = await updateStatusLaporan(1, additionalData.record_id);
-    if (!updated) {
-      logger("[GSB] Gagal saat update status menjadi berhasil");
-      return res
-        .status(500)
-        .json(resError("Gagal saat update status menjadi berhasil"));
-    }
-
-    const isNextAvailable = await getNextAntrian();
-    if (isNextAvailable) {
-      return await youtubeUpload(auth, res, {
-        meeting_id: isNextAvailable.judul,
-        record_id: isNextAvailable.deskripsi,
-      });
-    }
-
-    return res.status(200).json(resSuccess("Berhasil"));
-    youtube.videos.insert(
-      {
-        resource: {
-          snippet: {
-            title: `${additionalData.meeting_id}`,
-            description: `${additionalData.record_id}`,
-          },
-        },
-        part: "snippet",
-        media: {
-          body: fs.createReadStream(recordingDirectory),
+  youtube.videos.insert(
+    {
+      resource: {
+        snippet: {
+          title: additionalData.title,
+          description: additionalData.desc,
         },
       },
-      (err, data) => {
-        if (err) {
-          logger("[GAU-2 Gagal saat upload]");
+      part: "snippet",
+      media: {
+        body: fs.createReadStream(recordingDirectory),
+      },
+    },
+    async (err, data) => {
+      const isNextAvailable = await getNextAntrian();
+      if (err) {
+        const isQuotaExceed =
+          err?.response?.data?.error?.errors[0].reason == "quotaExceeded"
+            ? true
+            : false;
+
+        if (isQuotaExceed) {
+          logger("[MSB] Mengambil Secret Berikutnya");
+          const updated = await markExpSecret();
+          if (updated) {
+            await youtubeUpload(auth, res, {
+              title: isNextAvailable.judul,
+              desc: isNextAvailable.deskripsi,
+            });
+          } else {
+            logger("[GUSS] Gagal saat mengubah status secret");
+            return res
+              .status(500)
+              .json({ message: "Gagal saat mengubah status secret", err });
+          }
+        } else {
+          logger("[GAU-2] Gagal saat upload");
           return res.status(500).json({ message: "Gagal saat upload", err });
         }
       }
-    );
-  } catch (e) {
-    logger("[GAU-3 Gagal saat upload]");
-    return res.status(500).json({ message: "Gagal saat upload", e });
-  }
+
+      const updated = await updateStatusLaporan(1, additionalData.desc);
+      if (!updated) {
+        logger("[GSB] Gagal saat update status menjadi berhasil");
+        return res
+          .status(500)
+          .json(resError("Gagal saat update status menjadi berhasil"));
+      }
+
+      if (isNextAvailable) {
+        await youtubeUpload(auth, res, {
+          title: isNextAvailable.judul,
+          desc: isNextAvailable.deskripsi,
+        });
+      } else {
+        return res.json({});
+      }
+    }
+  );
 };
 
 module.exports = {

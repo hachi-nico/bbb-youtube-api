@@ -2,6 +2,7 @@
 yarn-error.log
 .listsecret.js
 .client-secret-vegan-market.json
+client-secret-old-shoes-showroom.json
 
 node_modules
 uploads
