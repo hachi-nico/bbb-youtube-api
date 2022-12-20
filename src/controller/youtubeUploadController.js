@@ -237,6 +237,7 @@ const youtubeUpload = async (auth, res, additionalData = {}) => {
       }
 
       sendNotification(
+        req.app.get("clientSub"),
         "Video dengan judul " +
           additionalData.judul +
           " telah berhasil di upload ke youtube"

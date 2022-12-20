@@ -12,15 +12,12 @@ const {
   resSuccess,
   insertDateTimeFormat,
   logger,
-  fireNotification,
 } = require("../controller/globalFunction");
 const { getSecret } = require("../model/google_auth_secret");
 
 const listenRecordingReady = async (req, res) => {
   const secret = await getSecret();
   if (!secret) {
-    const subs = req.app.get("clientSub");
-    fireNotification(req.app.get("clientSub"), "huhuhu");
     logger("[TST] Tidak ada secret yang tersedia");
     return res.status(200).json(resSuccess("Tidak ada secret yang tersedia"));
   }
