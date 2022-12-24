@@ -5,7 +5,7 @@ const {
   getAuthWithCallback,
   getAuthUrl,
   getNewToken,
-} = require("../controller/youtubeUploadController");
+} = require("../controller/youtubeController");
 const { login, logout } = require("../controller/authController");
 const {
   actionUserList,
@@ -59,6 +59,7 @@ routes.post("/callback-recording-ready", listenRecordingReady);
 routes.get("/google-oauth-redirect-uri", (req, res) => {
   return res.status(200).json({
     message: "This is redirect uris",
+    code: req.query?.code ?? "empty",
   });
 });
 

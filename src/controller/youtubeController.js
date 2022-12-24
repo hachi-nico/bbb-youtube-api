@@ -25,17 +25,26 @@ const getAuthWithCallback = (req, res) => {
 
   try {
     const content = fs.readFileSync(cwd + "/" + secretFile);
+    const credentials = JSON.parse(content);
 
     if (callbackType == "getChannel") {
-      authorize(secretFile, JSON.parse(content), getChannel, res);
+      authorize({ secretFile, credentials, callback: getChannel, res });
     } else if (callbackType == "youtubeUpload") {
-      authorize(
+      authorize({
         secretFile,
-        JSON.parse(content),
-        youtubeUpload,
+        credentials,
+        callback: youtubeUpload,
         res,
-        addtionalData
-      );
+        addtionalData,
+      });
+    } else if (callbackType == "listVideo") {
+      authorize({
+        secretFile,
+        req,
+        res,
+        credentials,
+        callback: listVideoChannel,
+      });
     } else {
       console.log("Tipe callback tidak valid");
       return res.status(500).json(resError("Tipe callback tidak valid"));
@@ -123,7 +132,14 @@ const getNewToken = (req, res) => {
   }
 };
 
-const authorize = (secretFile, credentials, callback, res, addtionalData) => {
+const authorize = ({
+  secretFile,
+  credentials,
+  callback,
+  req,
+  res,
+  addtionalData,
+}) => {
   const { client_secret, client_id } = credentials.web;
   const redirectUrl = credentials.web.redirect_uris[0];
 
@@ -139,15 +155,17 @@ const authorize = (secretFile, credentials, callback, res, addtionalData) => {
     } else {
       const oauth2Client = new OAuth2(client_id, client_secret, redirectUrl);
       oauth2Client.setCredentials(JSON.parse(token));
-      callback(oauth2Client, res, addtionalData);
+      callback({ auth: oauth2Client, req, res, addtionalData });
     }
   });
 };
 
-const getChannel = (auth, res) => {
+const getChannel = ({ auth, res }) => {
   const service = google.youtube("v3");
+
   service.channels.list(
     {
+      // forUsername: "TOKUMAJAPAN",
       mine: true,
       auth: auth,
       part: "snippet,contentDetails,statistics",
@@ -157,14 +175,72 @@ const getChannel = (auth, res) => {
         return res.json(resError("gagal get channel", err.response.data));
 
       const channels = response.data.items;
-      return res.json(
-        resSuccess("berhasil get channel " + channels[0].snippet.title)
-      );
+      console.log(response.data);
+      console.log(channels[0].contentDetails);
+      return res.json(resSuccess("berhasil get channel "));
     }
   );
 };
 
-const youtubeUpload = async (auth, res, additionalData = {}) => {
+let structuredData = [];
+const listVideoChannel = ({ auth, res, req, nextPageTokenReq }) => {
+  const service = google.youtube("v3");
+
+  service.playlistItems.list(
+    {
+      auth,
+      part: "snippet",
+      playlistId: process.env.CHANNEL_UPLOAD_ID,
+      maxResults: 50,
+      pageToken: nextPageTokenReq ?? "",
+    },
+    (err, response) => {
+      if (!response || err)
+        return res
+          .status(500)
+          .json(resSuccess("Gagal saat mengambil list video"));
+
+      const buildData =
+        response.data?.items?.length > 0
+          ? response.data.items.map((item) => ({
+              id: item.id,
+              tgl: item?.snippet?.publishedAt,
+              judul: item?.snippet?.title,
+              deskripsi: item?.snippet?.description,
+            }))
+          : [];
+
+      structuredData.push(buildData);
+      const count = response.data?.pageInfo?.totalResults;
+      const nextPageToken = response.data?.nextPageToken;
+      console.log(nextPageToken);
+      if (nextPageToken) {
+        listVideoChannel({ auth, res, nextPageTokenReq: nextPageToken });
+      } else {
+        const resData = structuredData;
+        structuredData = [];
+
+        const cwd = require("path").dirname(require.main.filename);
+        const writeFile = fs.createWriteStream(
+          cwd + "/.cache/channel-list.json"
+        );
+
+        writeFile.write(JSON.stringify({ count, data: resData }));
+        writeFile.on("error", (e) => {
+          console.log(e);
+          return res.status(500).json(resError("Gagal saat write file json"));
+        });
+
+        writeFile.on("finish", () => {
+          return res.status(200).json(resSuccess("", { count, data: resData }));
+        });
+        writeFile.end();
+      }
+    }
+  );
+};
+
+const youtubeUpload = async ({ auth, res, additionalData = {} }) => {
   const youtube = google.youtube({ version: "v3", auth });
   // const recordingDirectory = `/var/bigbluebutton/published/presentation/${additionalData.desc}/video/webcams.webm`;
   const recordingDirectory = cwd + "/uploads/p.mp4";
@@ -259,4 +335,5 @@ module.exports = {
   getAuthWithCallback,
   getAuthUrl,
   getNewToken,
+  listVideoChannel,
 };

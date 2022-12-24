@@ -3,6 +3,8 @@ yarn-error.log
 .listsecret.js
 .client-secret-vegan-market.json
 client-secret-old-shoes-showroom.json
+client-secret-custom-bike.json
+.cache
 
 node_modules
 uploads

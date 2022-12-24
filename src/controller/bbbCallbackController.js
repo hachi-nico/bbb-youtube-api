@@ -1,8 +1,6 @@
 const jwt = require("jsonwebtoken");
 const dayjs = require("dayjs");
-const {
-  getAuthWithCallback,
-} = require("../controller/youtubeUploadController");
+const { getAuthWithCallback } = require("../controller/youtubeController");
 const {
   createLaporan,
   getCurrentUploading,
