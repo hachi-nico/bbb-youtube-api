@@ -25,7 +25,7 @@ const getAuthWithCallback = async (req, res) => {
     return res.status(200).json(resSuccess("Tidak ada secret yang tersedia"));
   }
 
-  const { callbackType, addtionalData = {} } = req.body;
+  const { callbackType, additionalData = {} } = req.body;
 
   if (!secretFile)
     return res.status(500).json(resError("Ada parameter wajib yang kosong"));
@@ -42,7 +42,7 @@ const getAuthWithCallback = async (req, res) => {
         credentials,
         callback: youtubeUpload,
         res,
-        addtionalData,
+        additionalData,
       });
     } else if (callbackType == "listVideo") {
       authorize({
@@ -145,7 +145,7 @@ const authorize = ({
   callback,
   req,
   res,
-  addtionalData,
+  additionalData,
 }) => {
   const { client_secret, client_id } = credentials.web;
   const redirectUrl = credentials.web.redirect_uris[0];
@@ -162,7 +162,7 @@ const authorize = ({
     } else {
       const oauth2Client = new OAuth2(client_id, client_secret, redirectUrl);
       oauth2Client.setCredentials(JSON.parse(token));
-      callback({ auth: oauth2Client, req, res, addtionalData });
+      callback({ auth: oauth2Client, req, res, additionalData });
     }
   });
 };
@@ -172,7 +172,6 @@ const getChannel = ({ auth, res }) => {
 
   service.channels.list(
     {
-      // forUsername: "TOKUMAJAPAN",
       mine: true,
       auth: auth,
       part: "snippet,contentDetails,statistics",
@@ -269,10 +268,20 @@ const listVideoChannel = ({ auth, res, req, nextPageTokenReq }) => {
   );
 };
 
-const youtubeUpload = async ({ auth, res, additionalData = {} }) => {
+const youtubeUpload = async ({ auth, res, req, additionalData = {} }) => {
   const youtube = google.youtube({ version: "v3", auth });
+  let recordingDirectory = "";
   // const recordingDirectory = `/var/bigbluebutton/published/presentation/${additionalData.desc}/video/webcams.webm`;
-  const recordingDirectory = cwd + "/uploads/p.mp4";
+  recordingDirectory = cwd + "/uploads/p.mp4";
+
+  if (additionalData.filename) {
+    recordingDirectory = cwd + "/uploads/" + additionalData.filename;
+  }
+
+  if (!recordingDirectory) {
+    logger("[FTD] File tidak ditemukan");
+    return res.status(200).json(resSuccess("File tidak ditemukan"));
+  }
 
   youtube.videos.insert(
     {
@@ -288,6 +297,11 @@ const youtubeUpload = async ({ auth, res, additionalData = {} }) => {
       },
     },
     async (err, data) => {
+      const cachePath = cwd + "/.cache/channel-list.json";
+      const cacheExist = fs.existsSync(cachePath);
+
+      if (cacheExist) fs.unlink(cachePath, () => {});
+
       const isNextAvailable = await getNextAntrian();
       if (err) {
         const isQuotaExceed =
@@ -317,7 +331,7 @@ const youtubeUpload = async ({ auth, res, additionalData = {} }) => {
           getAuthWithCallback(
             {
               body: {
-                addtionalData: {
+                additionalData: {
                   title: isNextAvailable.judul,
                   desc: isNextAvailable.deskripsi,
                 },
@@ -341,12 +355,14 @@ const youtubeUpload = async ({ auth, res, additionalData = {} }) => {
           .json(resError("Gagal saat update status menjadi berhasil"));
       }
 
-      sendNotification(
-        req.app.get("clientSub"),
-        "Video dengan judul " +
-          additionalData.judul +
-          " telah berhasil di upload ke youtube"
-      );
+      if (req?.app?.get("clientSub")) {
+        sendNotification(
+          req.app.get("clientSub"),
+          "Video dengan judul " +
+            additionalData.judul +
+            " telah berhasil di upload ke youtube"
+        );
+      }
 
       if (isNextAvailable) {
         await youtubeUpload(auth, res, {

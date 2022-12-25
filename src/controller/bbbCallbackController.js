@@ -14,21 +14,19 @@ const {
 const { getSecret } = require("../model/google_auth_secret");
 
 const listenRecordingReady = async (req, res) => {
-  const secret = await getSecret();
-  if (!secret) {
-    logger("[TST] Tidak ada secret yang tersedia");
-    return res.status(200).json(resSuccess("Tidak ada secret yang tersedia"));
-  }
-
   let bbbCallbackBody = "";
-  const { signed_parameters } = req.body;
+  const { signed_parameters, manualTitle, manualDescription, manualFilename } =
+    req.body;
+
   if (signed_parameters) {
     bbbCallbackBody = jwt.decode(signed_parameters);
   } else {
-    logger("[GAC] Gagal saat melakukan action callback");
-    return res
-      .status(500)
-      .json(resError("Gagal saat melakukan action callback"));
+    if (!manualFilename) {
+      logger("[GAC] Gagal saat melakukan action callback");
+      return res
+        .status(500)
+        .json(resError("Gagal saat melakukan action callback"));
+    }
   }
 
   bbbCallbackBody = {
@@ -36,14 +34,29 @@ const listenRecordingReady = async (req, res) => {
     record_id: `${Math.floor(Math.random() * 1001)} ${new Date()}`,
   };
 
+  const secret = await getSecret();
+  if (!secret) {
+    await createLaporan(
+      manualTitle ?? titleFormat,
+      manualDescription ?? bbbCallbackBody.record_id,
+      dayjs().format(insertDateTimeFormat),
+      "",
+      5,
+      0
+    );
+    logger("[TST] Tidak ada secret yang tersedia");
+    return res.status(200).json(resSuccess("Tidak ada secret yang tersedia"));
+  }
+
   const isUploading = await getCurrentUploading();
 
   const titleFormat = `${Math.floor(Math.random() * 1001)} ${
     bbbCallbackBody.meeting_id
   } ${dayjs().format(insertDateTimeFormat)}`;
+
   const insertLaporan = await createLaporan(
-    titleFormat,
-    bbbCallbackBody.record_id,
+    manualTitle ?? titleFormat,
+    manualDescription ?? bbbCallbackBody.record_id,
     dayjs().format(insertDateTimeFormat),
     "",
     isUploading ? 4 : 2,
@@ -67,9 +80,10 @@ const listenRecordingReady = async (req, res) => {
     return await getAuthWithCallback(
       {
         body: {
-          addtionalData: {
-            title: titleFormat,
-            desc: bbbCallbackBody.record_id,
+          additionalData: {
+            title: manualTitle ?? titleFormat,
+            desc: manualDescription ?? bbbCallbackBody.record_id,
+            filename: manualFilename ?? "",
           },
           secretFile: secret.secret,
           callbackType: "youtubeUpload",

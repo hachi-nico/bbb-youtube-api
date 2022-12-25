@@ -23,16 +23,13 @@ const {
 const authMiddleware = require("../middleware/authMiddleware");
 const uploadMiddleware = require("../middleware/uploadMiddleware");
 
-const {
-  apiCall,
-  BASE_BBB,
-  hashBBBSecret,
-} = require("../controller/globalFunction");
-
 const routes = Router();
 
-// local upload
+// upload manual
 routes.post("/local-upload", uploadMiddleware, upload);
+routes.post("/verify-upload-page", uploadMiddleware, (req, res) => {
+  return res.status(200).json({ status: 1 });
+});
 
 // laporan
 routes.post("/antrian", authMiddleware, actionGetAntrian);
