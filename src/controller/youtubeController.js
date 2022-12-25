@@ -17,8 +17,15 @@ const {
 } = require("../model/laporan_upload");
 const { getSecret, markExpSecret } = require("../model/google_auth_secret");
 
-const getAuthWithCallback = (req, res) => {
-  const { callbackType, secretFile, addtionalData = {} } = req.body;
+const getAuthWithCallback = async (req, res) => {
+  const { secret: secretFile } = await getSecret();
+
+  if (!secretFile) {
+    logger("[TST] Tidak ada secret yang tersedia");
+    return res.status(200).json(resSuccess("Tidak ada secret yang tersedia"));
+  }
+
+  const { callbackType, addtionalData = {} } = req.body;
 
   if (!secretFile)
     return res.status(500).json(resError("Ada parameter wajib yang kosong"));
@@ -173,10 +180,6 @@ const getChannel = ({ auth, res }) => {
     function (err, response) {
       if (err)
         return res.json(resError("gagal get channel", err.response.data));
-
-      const channels = response.data.items;
-      console.log(response.data);
-      console.log(channels[0].contentDetails);
       return res.json(resSuccess("berhasil get channel "));
     }
   );
@@ -184,6 +187,37 @@ const getChannel = ({ auth, res }) => {
 
 let structuredData = [];
 const listVideoChannel = ({ auth, res, req, nextPageTokenReq }) => {
+  const { offset, limit, search } = req.body;
+  const cwd = require("path").dirname(require.main.filename);
+  const cachePath = cwd + "/.cache/channel-list.json";
+
+  const handleError = () => {
+    res.status(500).json(resSuccess("Gagal saat mengambil list video"));
+  };
+
+  const handleDataFilter = (data) => {
+    let filteredData = data;
+    if (offset) filteredData = filteredData.slice(offset);
+    if (limit) filteredData = filteredData.slice(0, limit);
+    if (search)
+      filteredData = filteredData.filter((item) => item.judul.includes(search));
+
+    return filteredData;
+  };
+
+  const cacheExist = fs.existsSync(cachePath);
+  if (cacheExist) {
+    try {
+      const data = fs.readFileSync(cachePath);
+      const parsedData = JSON.parse(data.toString());
+      const resData = handleDataFilter(parsedData.data);
+
+      return res.json({ count: parsedData.count, data: resData });
+    } catch (e) {
+      handleError();
+    }
+  }
+
   const service = google.youtube("v3");
 
   service.playlistItems.list(
@@ -195,10 +229,7 @@ const listVideoChannel = ({ auth, res, req, nextPageTokenReq }) => {
       pageToken: nextPageTokenReq ?? "",
     },
     (err, response) => {
-      if (!response || err)
-        return res
-          .status(500)
-          .json(resSuccess("Gagal saat mengambil list video"));
+      if (!response || err) return handleError();
 
       const buildData =
         response.data?.items?.length > 0
@@ -213,26 +244,22 @@ const listVideoChannel = ({ auth, res, req, nextPageTokenReq }) => {
       structuredData.push(buildData);
       const count = response.data?.pageInfo?.totalResults;
       const nextPageToken = response.data?.nextPageToken;
-      console.log(nextPageToken);
+
       if (nextPageToken) {
         listVideoChannel({ auth, res, nextPageTokenReq: nextPageToken });
       } else {
-        const resData = structuredData;
+        const resData = structuredData[0];
         structuredData = [];
 
-        const cwd = require("path").dirname(require.main.filename);
-        const writeFile = fs.createWriteStream(
-          cwd + "/.cache/channel-list.json"
-        );
+        const writeFile = fs.createWriteStream(cachePath);
 
         writeFile.write(JSON.stringify({ count, data: resData }));
-        writeFile.on("error", (e) => {
-          console.log(e);
-          return res.status(500).json(resError("Gagal saat write file json"));
-        });
-
+        writeFile.on("error", () =>
+          res.status(500).json(resError("Gagal saat write file json"))
+        );
         writeFile.on("finish", () => {
-          return res.status(200).json(resSuccess("", { count, data: resData }));
+          const filteredData = handleDataFilter(resData);
+          res.status(200).json(resSuccess("", { count, data: filteredData }));
         });
         writeFile.end();
       }

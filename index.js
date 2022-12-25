@@ -11,7 +11,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
 
-// notification
 webpush.setVapidDetails(
   "mailto:test@test.com",
   process.env.PUBLIC_VAPID_KEY,
