@@ -59,7 +59,7 @@ const getLaporan = async (
 ) => {
   try {
     let sql =
-      "SELECT judul,deskripsi,status, TO_CHAR(tgl_upload,'YYYY-MM-DD HH24:mm:ss') AS tgl_upload FROM public.laporan_upload WHERE";
+      "SELECT id_laporan,judul,deskripsi,status, TO_CHAR(tgl_upload,'YYYY-MM-DD HH24:mm:ss') AS tgl_upload FROM public.laporan_upload WHERE";
     let bindParam = [];
 
     if (status) {
