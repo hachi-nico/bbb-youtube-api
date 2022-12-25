@@ -54,32 +54,32 @@ const getLaporan = async (
   limit = false,
   offset = 0,
   search = "",
-  tipe = 0,
+  status = 0,
   tglSort = ""
 ) => {
   try {
     let sql =
-      "SELECT judul,deskripsi, TO_CHAR(tgl_upload,'YYYY-MM-DD HH24:mm:ss') AS tgl_upload FROM public.user WHERE";
+      "SELECT judul,deskripsi,status, TO_CHAR(tgl_upload,'YYYY-MM-DD HH24:mm:ss') AS tgl_upload FROM public.laporan_upload WHERE";
     let bindParam = [];
 
-    if (tipe) {
-      sql += " tipe IN(?)";
-      bindParam.push(tipe);
+    if (status) {
+      sql += " status IN(?)";
+      bindParam.push(status);
     } else {
-      sql += " tipe IN(1,2,3)";
+      sql += " status IN(1,2,3,4,5)";
     }
 
     if (search) {
       sql +=
-        " AND (LOWER(username) like LOWER(?) OR LOWER(nama) like LOWER(?))";
+        " AND (LOWER(judul) like LOWER(?) OR LOWER(deskripsi) like LOWER(?))";
       bindParam.push("%" + search + "%");
       bindParam.push("%" + search + "%");
     }
 
     if (tglSort == "ASC") {
-      sql += " ORDER BY user_id ASC";
+      sql += " ORDER BY id_laporan ASC";
     } else {
-      sql += " ORDER BY user_id DESC";
+      sql += " ORDER BY id_laporan DESC";
     }
 
     if (limit) {

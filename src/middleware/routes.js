@@ -17,6 +17,7 @@ const { listenRecordingReady } = require("../controller/bbbCallbackController");
 const {
   actionGetAntrian,
   actionCountAntrian,
+  actionListLaporan,
 } = require("../controller/laporanUploadController");
 
 const authMiddleware = require("../middleware/authMiddleware");
@@ -36,6 +37,7 @@ routes.post("/local-upload", uploadMiddleware, upload);
 // laporan
 routes.post("/antrian", authMiddleware, actionGetAntrian);
 routes.post("/count-antrian", authMiddleware, actionCountAntrian);
+routes.post("/laporan-list", authMiddleware, actionListLaporan);
 
 // google auth dan callback youtube
 routes.post("/get-auth-callback", getAuthWithCallback);

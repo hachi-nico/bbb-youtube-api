@@ -1,4 +1,8 @@
-const { getAntrian, countAntrian } = require("../model/laporan_upload");
+const {
+  getAntrian,
+  countAntrian,
+  getLaporan,
+} = require("../model/laporan_upload");
 const { resError, resSuccess } = require("../controller/globalFunction");
 
 const actionGetAntrian = async (req, res) => {
@@ -18,4 +22,16 @@ const actionCountAntrian = async (req, res) => {
   return res.status(200).json(resSuccess("", { count: count.count }));
 };
 
-module.exports = { actionGetAntrian, actionCountAntrian };
+const actionListLaporan = async (req, res) => {
+  const { limit, offset, search, status, tglSort } = req.body;
+  const laporan = await getLaporan(limit, offset, search, status, tglSort);
+
+  if (!laporan)
+    return res
+      .status(500)
+      .json(resError("Gagal saat mengambil list data laporan"));
+
+  return res.json(resSuccess("", { laporan }));
+};
+
+module.exports = { actionGetAntrian, actionCountAntrian, actionListLaporan };

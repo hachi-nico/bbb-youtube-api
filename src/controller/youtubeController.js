@@ -212,7 +212,9 @@ const listVideoChannel = ({ auth, res, req, nextPageTokenReq }) => {
       const parsedData = JSON.parse(data.toString());
       const resData = handleDataFilter(parsedData.data);
 
-      return res.json({ count: parsedData.count, data: resData });
+      return res
+        .status(200)
+        .json(resSuccess("", { count: parsedData.count, data: resData }));
     } catch (e) {
       handleError();
     }
