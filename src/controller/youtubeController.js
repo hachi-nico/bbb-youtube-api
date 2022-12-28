@@ -18,14 +18,20 @@ const {
 const { getSecret, markExpSecret } = require("../model/google_auth_secret");
 
 const getAuthWithCallback = async (req, res) => {
-  const { secret: secretFile } = await getSecret();
+  const { callbackType, additionalData = {} } = req.body;
+
+  // secret untuk list dan update
+  const whitelistCallback = ["listVideo", "updateVideo"].includes(callbackType);
+
+  // secret untuk upload
+  let { secret: secretFile } = await getSecret();
+
+  if (whitelistCallback) secretFile = "client-secret-custom-bike.json";
 
   if (!secretFile) {
     logger("[TST] Tidak ada secret yang tersedia");
     return res.status(200).json(resSuccess("Tidak ada secret yang tersedia"));
   }
-
-  const { callbackType, additionalData = {} } = req.body;
 
   if (!secretFile)
     return res.status(500).json(resError("Ada parameter wajib yang kosong"));
@@ -51,6 +57,14 @@ const getAuthWithCallback = async (req, res) => {
         res,
         credentials,
         callback: listVideoChannel,
+      });
+    } else if (callbackType == "updateVideo") {
+      authorize({
+        secretFile,
+        req,
+        res,
+        credentials,
+        callback: updateVideo,
       });
     } else {
       console.log("Tipe callback tidak valid");
@@ -235,7 +249,7 @@ const listVideoChannel = ({ auth, res, req, nextPageTokenReq }) => {
       const buildData =
         response.data?.items?.length > 0
           ? response.data.items.map((item) => ({
-              id: item.id,
+              id: item.snippet?.resourceId?.videoId,
               tgl: item?.snippet?.publishedAt,
               judul: item?.snippet?.title,
               deskripsi: item?.snippet?.description,
@@ -376,9 +390,35 @@ const youtubeUpload = async ({ auth, res, req, additionalData = {} }) => {
   );
 };
 
+const updateVideo = ({ auth, req, res }) => {
+  const { id, judul, deskripsi } = req.body;
+  const youtube = google.youtube({ version: "v3", auth });
+
+  if (!id)
+    return res.status(500).json(resError("Ada parameter wajib yang kosong"));
+
+  youtube.videos.update(
+    {
+      requestBody: {
+        id,
+        snippet: { categoryId: 27, title: judul, description: deskripsi },
+      },
+      part: "snippet",
+      auth,
+    },
+    (err) => {
+      console.log(err);
+      if (err)
+        return res
+          .status(500)
+          .json(resError("Gagal saat update video", { err }));
+      return res.status(200).json(resSuccess(""));
+    }
+  );
+};
+
 module.exports = {
   getAuthWithCallback,
   getAuthUrl,
   getNewToken,
-  listVideoChannel,
 };

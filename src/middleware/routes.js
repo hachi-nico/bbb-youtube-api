@@ -27,7 +27,7 @@ const routes = Router();
 
 // upload manual
 routes.post("/local-upload", uploadMiddleware, upload);
-routes.post("/verify-upload-page", uploadMiddleware, (req, res) => {
+routes.post("/verify-upload-page", authMiddleware, (req, res) => {
   return res.status(200).json({ status: 1 });
 });
 

@@ -9,7 +9,7 @@ const insertDateTimeFormat = "YYYY-MM-DD HH:mm:ss";
 
 // jika mengubah scopes hapus dulu json yang tersimpan
 const SCOPES = [
-  "https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/youtube.upload",
+  "https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.force-ssl ",
 ];
 
 const TOKEN_DIR =
