@@ -14,7 +14,7 @@ app.use(
     credentials: true,
     preflightContinue: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    origin: process.env.ORIGIN_URL,
+    origin: "*",
   })
 );
 
