@@ -3,7 +3,6 @@ const cors = require("cors");
 const cron = require("node-cron");
 const webpush = require("web-push");
 require("dotenv").config();
-const path = require("path");
 
 const routes = require("./src/middleware/routes");
 
@@ -25,8 +24,6 @@ app.post("/notification-subscribe", (req, res) => {
 });
 
 app.use(routes);
-
-app.use(express.static("public"));
 
 app.listen(process.env.PORT, (err) => {
   if (err) return console.log("Internal Server Error");
