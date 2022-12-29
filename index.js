@@ -7,11 +7,7 @@ require("dotenv").config();
 const routes = require("./src/middleware/routes");
 
 const app = express();
-app.use(
-  cors({
-    origin: process.env.ORIGIN_URL,
-  })
-);
+app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
