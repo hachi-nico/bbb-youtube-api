@@ -9,3 +9,4 @@ client-secret-custom-bike.json
 node_modules
 uploads
 .log
+dist
