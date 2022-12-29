@@ -7,16 +7,13 @@ require("dotenv").config();
 const routes = require("./src/middleware/routes");
 
 const app = express();
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
 app.use(
   cors({
-    credentials: true,
-    preflightContinue: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    origin: "*",
+    origin: process.env.ORIGIN_URL,
   })
 );
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 webpush.setVapidDetails(
   "mailto:test@test.com",
