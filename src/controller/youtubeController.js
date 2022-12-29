@@ -407,11 +407,15 @@ const updateVideo = ({ auth, req, res }) => {
       auth,
     },
     (err) => {
-      console.log(err);
       if (err)
         return res
           .status(500)
           .json(resError("Gagal saat update video", { err }));
+
+      const cachePath = cwd + "/.cache/channel-list.json";
+      const cacheExist = fs.existsSync(cachePath);
+
+      if (cacheExist) fs.unlink(cachePath, () => {});
       return res.status(200).json(resSuccess(""));
     }
   );
