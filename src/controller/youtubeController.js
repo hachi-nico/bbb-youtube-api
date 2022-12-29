@@ -83,7 +83,7 @@ const getAuthUrl = (req, res) => {
   const { secretFile } = req.query;
 
   try {
-    fs.readFile(secretFile, (e, content) => {
+    fs.readFile(cwd + "/" + secretFile, (e, content) => {
       if (e) {
         return res.status(500).json({
           e,
@@ -117,7 +117,7 @@ const getNewToken = (req, res) => {
   const { secretFile, code } = req.body;
 
   try {
-    fs.readFile(secretFile, (e, content) => {
+    fs.readFile(cwd + "/" + secretFile, (e, content) => {
       if (e) {
         return res.status(500).json({
           e,
