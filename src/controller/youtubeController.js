@@ -286,7 +286,10 @@ const youtubeUpload = async ({ auth, res, req, additionalData = {} }) => {
   const youtube = google.youtube({ version: "v3", auth });
   let recordingDirectory = "";
   // const recordingDirectory = `/var/bigbluebutton/published/presentation/${additionalData.desc}/video/webcams.webm`;
-  recordingDirectory = cwd + "/uploads/p.mp4";
+  recordingDirectory =
+    "/var/bigbluebutton/published/presentation" +
+    additionalData.desc +
+    "/meeting.mp4";
 
   if (additionalData.filename) {
     recordingDirectory = additionalData.filename;
