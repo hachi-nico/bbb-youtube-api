@@ -289,7 +289,7 @@ const youtubeUpload = async ({ auth, res, req, additionalData = {} }) => {
   recordingDirectory = cwd + "/uploads/p.mp4";
 
   if (additionalData.filename) {
-    recordingDirectory = cwd + "/uploads/" + additionalData.filename;
+    recordingDirectory = additionalData.filename;
   }
 
   if (!recordingDirectory) {

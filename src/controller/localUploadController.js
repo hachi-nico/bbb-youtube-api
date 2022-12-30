@@ -2,8 +2,8 @@ const { listenRecordingReady } = require("./bbbCallbackController");
 const { resError } = require("./globalFunction");
 
 const upload = async (req, res) => {
-  const manualFilename = res.locals.filename;
   const { manualTitle, manualDescription } = req.body;
+  const manualFilename = req?.files?.file?.file;
 
   if (!manualFilename) {
     return res.status(500).json(resError("File tidak valid"));

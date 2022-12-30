@@ -2,14 +2,20 @@ const express = require("express");
 const cors = require("cors");
 const cron = require("node-cron");
 const webpush = require("web-push");
+const bb = require("express-busboy");
 require("dotenv").config();
 
 const routes = require("./src/middleware/routes");
 
 const app = express();
 app.use(cors());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+bb.extend(app, {
+  upload: true,
+  path: require("path").dirname(require.main.filename) + "/uploads",
+  allowedPath: /./,
+});
+// app.use(express.urlencoded({ extended: true }));
+// app.use(express.json());
 
 webpush.setVapidDetails(
   "mailto:test@test.com",
