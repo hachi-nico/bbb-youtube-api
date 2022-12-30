@@ -29,10 +29,10 @@ const listenRecordingReady = async (req, res) => {
     }
   }
 
-  bbbCallbackBody = {
-    meeting_id: "room-Sidang-PA-7649377",
-    record_id: `${Math.floor(Math.random() * 1001)} ${new Date()}`,
-  };
+  // bbbCallbackBody = {
+  //   meeting_id: "room-Sidang-PA-7649377",
+  //   record_id: `${Math.floor(Math.random() * 1001)} ${new Date()}`,
+  // };
 
   const secret = await getSecret();
   if (!secret) {
