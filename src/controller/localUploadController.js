@@ -1,5 +1,6 @@
+const { createLaporan } = require("../model/laporan_upload");
 const { listenRecordingReady } = require("./bbbCallbackController");
-const { resError } = require("./globalFunction");
+const { resError, insertDateTimeFormat } = require("./globalFunction");
 
 const upload = async (req, res) => {
   const { manualTitle, manualDescription } = req.body;
@@ -19,6 +20,15 @@ const upload = async (req, res) => {
         },
       },
       res
+    );
+
+    await createLaporan(
+      manualTitle ?? "Tanpa Judul",
+      manualDescription ?? "Tanpa Deskripsi",
+      dayjs().format(insertDateTimeFormat),
+      "",
+      2,
+      0
     );
   } catch (e) {
     return res.status(500).json({ e, message: "Error saat upload ke server" });
