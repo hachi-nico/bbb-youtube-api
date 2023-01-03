@@ -321,7 +321,9 @@ const youtubeUpload = async ({ auth, res, req, additionalData = {} }) => {
       if (cacheExist) fs.unlink(cachePath, () => {});
 
       const isNextAvailable = await getNextAntrian();
-      await updateStatusLaporan(2, isNextAvailable.deskripsi);
+      if (isNextAvailable)
+        await updateStatusLaporan(2, isNextAvailable.deskripsi);
+
       if (err) {
         const isQuotaExceed =
           err?.response?.data?.error?.errors[0].reason == "quotaExceeded"
