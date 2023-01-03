@@ -382,9 +382,13 @@ const youtubeUpload = async ({ auth, res, req, additionalData = {} }) => {
       }
 
       if (isNextAvailable) {
-        await youtubeUpload(auth, res, {
-          title: isNextAvailable.judul,
-          desc: isNextAvailable.deskripsi,
+        await youtubeUpload({
+          auth,
+          res,
+          additionalData: {
+            title: isNextAvailable.judul,
+            desc: isNextAvailable.deskripsi,
+          },
         });
       } else {
         return res.json({});
