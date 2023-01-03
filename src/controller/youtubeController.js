@@ -284,6 +284,7 @@ const listVideoChannel = ({ auth, res, req, nextPageTokenReq }) => {
 
 const youtubeUpload = async ({ auth, res, req, additionalData = {} }) => {
   const youtube = google.youtube({ version: "v3", auth });
+  // let recordingDirectory = "/home/nico/bbb-youtube-api/uploads/vidvid.mp4";
   let recordingDirectory = "";
   // const recordingDirectory = `/var/bigbluebutton/published/presentation/${additionalData.desc}/video/webcams.webm`;
   recordingDirectory =
